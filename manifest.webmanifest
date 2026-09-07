@@ -1,0 +1,11 @@
+{
+  "name":"六合彩分析助手",
+  "short_name":"六合彩分析",
+  "description":"香港六合彩开奖记录与统计分析工具。历史统计仅供参考，不预测未来。",
+  "start_url":"./",
+  "scope":"./",
+  "display":"standalone",
+  "background_color":"#f4f7fb",
+  "theme_color":"#0a3fa8",
+  "icons":[]
+}
