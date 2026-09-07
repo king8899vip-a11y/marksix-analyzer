@@ -76,6 +76,23 @@ async function boot(){
     return;
   }
   renderLatest(); renderRankings(); generatePick();
+  await renderUpdateStatus();
+  setInterval(refreshResults, 30*60*1000);
 }
+async function renderUpdateStatus(){
+  let status=document.querySelector('#updateStatus');
+  if(!status){status=document.createElement('p');status.id='updateStatus';status.className='notice';document.querySelector('.latest-card').after(status);}
+  status.textContent=snapshot.checkedAt ? `开奖来源：香港赛马会 · 最近核对：${new Date(snapshot.checkedAt).toLocaleString('zh-CN',{timeZone:'Asia/Hong_Kong'})}（香港时间）。约每30分钟检查；排程可能延迟。` : '正在等待官方数据同步';
+  let warning=document.querySelector('#statisticsNotice');
+  if(!warning){warning=document.createElement('p');warning.id='statisticsNotice';warning.className='notice';document.querySelector('main').prepend(warning);}
+  warning.textContent='开奖记录自动更新；号码、生肖、机器分析仍为原示例快照（2026-09-05），尚未按新开奖重新计算。';
+  try{
+    const res=await fetch('./data/history.json?t='+Date.now(),{cache:'no-store'});if(!res.ok)throw new Error('History unavailable');const history=await res.json();
+    let panel=document.querySelector('#historyPanel');if(!panel){panel=document.createElement('details');panel.id='historyPanel';panel.className='card explanation';document.querySelector('#home').append(panel);}
+    panel.replaceChildren();const summary=document.createElement('summary');summary.textContent=`官方开奖记录（已保存 ${history.draws.length} 期）`;panel.append(summary);
+    history.draws.forEach(d=>{const row=document.createElement('p');row.textContent=`${d.date} · ${d.issue}：${d.main.map(n=>String(n).padStart(2,'0')).join(' ')} ｜ 特别号 ${String(d.special).padStart(2,'0')}`;panel.append(row);});
+  }catch(e){status.textContent+=' 历史记录暂时无法读取，请稍后刷新。';}
+}
+async function refreshResults(){try{snapshot=await window.MarkSixData.getSnapshot();renderLatest();await renderUpdateStatus();}catch(e){const status=document.querySelector('#updateStatus');if(status)status.textContent='更新读取失败，当前保留上次数据。请检查网络后刷新。';}}
 boot();
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
