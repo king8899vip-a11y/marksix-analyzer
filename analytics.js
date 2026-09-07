@@ -16,7 +16,7 @@
   note.textContent=token?'本站使用 Cloudflare Web Analytics 统计页面访问、来源、设备及大致地区，不使用统计 Cookie 或浏览器存储来识别访客，不记录生成的号码。':'本站已停用 Google Analytics，目前基础访问统计尚未启用。';
   details.append(note);document.querySelector('main').append(details);
   if(!/^[a-f0-9]{32}$/i.test(token||''))return;
-  const script=document.createElement('script');script.defer=true;
+  const script=document.createElement('script');script.type='module';
   script.src='https://static.cloudflareinsights.com/beacon.min.js';
   script.setAttribute('data-cf-beacon',JSON.stringify({token,spa:false}));
   document.head.append(script);
