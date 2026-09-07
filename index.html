@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a3fa8" />
+  <title>六合彩分析助手 · Mark Six Analyzer</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="brand">六合彩分析助手</div>
+        <div class="subtitle">Mark Six Analyzer · 数据参考，不预测未来</div>
+      </div>
+      <button id="themeBtn" class="icon-btn" aria-label="切换主题">◐</button>
+    </header>
+
+    <main>
+      <section id="home" class="page active">
+        <div class="hero card">
+          <div class="hero-kicker">第五代摇珠机监测</div>
+          <h1>用数据看趋势<br/>让选择更理性</h1>
+          <p>正选、特别号、生肖、换机前后分开统计。</p>
+          <div class="hero-stats">
+            <div><strong id="sampleCount">50</strong><span>第五代样本期数</span></div>
+            <div><strong id="hotNumber">07</strong><span>重点异常号</span></div>
+            <div><strong id="hotZodiac">鼠</strong><span>重点生肖</span></div>
+          </div>
+        </div>
+
+        <div class="section-head">
+          <h2>最新开奖</h2>
+          <span id="latestMeta" class="muted"></span>
+        </div>
+        <div class="card latest-card">
+          <div id="latestBalls" class="balls"></div>
+          <div class="special-wrap"><span>特别号</span><div id="specialBall"></div></div>
+        </div>
+
+        <div class="grid-2">
+          <button class="card action-card nav-link" data-target="numbers"><span class="emoji">📊</span><b>号码分析</b><small>1–49长期频率与偏离</small></button>
+          <button class="card action-card nav-link" data-target="zodiac"><span class="emoji">🐭</span><b>生肖分析</b><small>按单号长期表现汇总</small></button>
+          <button class="card action-card nav-link" data-target="special"><span class="emoji">⭐</span><b>特别号分析</b><small>与6个正选完全分开</small></button>
+          <button class="card action-card nav-link" data-target="machine"><span class="emoji">⚙️</span><b>机器对比</b><small>第四代 vs 第五代</small></button>
+        </div>
+
+        <div class="section-head"><h2>快速选号</h2><span class="muted">娱乐模拟</span></div>
+        <div class="card picker-card">
+          <div class="picker-tabs">
+            <button class="seg active" data-mode="random">纯随机</button>
+            <button class="seg" data-mode="weighted">历史观察型</button>
+          </div>
+          <div id="pickResult" class="balls pick-balls"></div>
+          <div class="pick-actions">
+            <button id="pickBtn" class="primary">生成 6+1</button>
+          </div>
+          <p class="fineprint">“历史观察型”只按历史样本权重模拟；公平开奖下不会提高下一期客观概率。</p>
+        </div>
+      </section>
+
+      <section id="numbers" class="page">
+        <div class="page-title"><button class="back">‹</button><div><h2>号码分析</h2><p>第五代机器 · 正选号码</p></div></div>
+        <div class="card focus-card">
+          <div class="focus-ball red">07</div>
+          <div class="focus-copy">
+            <span class="badge danger">持续异常观察</span>
+            <h3>07号</h3>
+            <p>历史实测频率显著高于理论值，但不代表下一期概率更高。</p>
+          </div>
+        </div>
+        <div class="metric-grid">
+          <div class="metric card"><span>出现次数</span><strong>18 / 50</strong></div>
+          <div class="metric card"><span>实际期出现率</span><strong>36.0%</strong></div>
+          <div class="metric card"><span>理论期出现率</span><strong>12.24%</strong></div>
+          <div class="metric card"><span>相对偏离</span><strong>+194%</strong></div>
+        </div>
+        <div class="section-head"><h2>重点观察号码</h2><span class="muted">示例快照</span></div>
+        <div id="numberRanking" class="rank-list card"></div>
+      </section>
+
+      <section id="zodiac" class="page">
+        <div class="page-title"><button class="back">‹</button><div><h2>生肖分析</h2><p>先看单号长期表现，再汇总生肖</p></div></div>
+        <div class="notice">不会因为某一期同一生肖一次开出多个号码，就直接判定该生肖“变热”。</div>
+        <div id="zodiacRanking" class="rank-list card"></div>
+      </section>
+
+      <section id="special" class="page">
+        <div class="page-title"><button class="back">‹</button><div><h2>特别号分析</h2><p>每期1个特别号，理论单号概率 1/49</p></div></div>
+        <div class="grid-2">
+          <div class="card highlight"><span>2026热特别号</span><strong>27 · 34</strong><small>截至26/095快照：各5次</small></div>
+          <div class="card highlight"><span>第五代热特别肖</span><strong>🐵 猴</strong><small>11 · 23 · 35 · 47</small></div>
+        </div>
+        <div class="section-head"><h2>特别号观察池</h2></div>
+        <div class="card chips" id="specialPool"></div>
+      </section>
+
+      <section id="machine" class="page">
+        <div class="page-title"><button class="back">‹</button><div><h2>机器对比</h2><p>第四代 vs 第五代</p></div></div>
+        <div class="card compare-card">
+          <div class="compare-row"><span>第五代启用</span><strong>2026-05-05 · 26/047</strong></div>
+          <div class="compare-row"><span>当前样本</span><strong>50期</strong></div>
+          <div class="compare-row"><span>最突出号码</span><strong>07</strong></div>
+          <div class="compare-row"><span>最突出生肖</span><strong>鼠</strong></div>
+        </div>
+        <div class="card explanation">
+          <h3>检测逻辑</h3>
+          <p>号码层使用二项检验，换机前后可用 Fisher 精确检验；生肖层按当年号码数量计算理论概率，并进行多重比较校正。</p>
+          <p>统计显著只代表“历史样本不寻常”，不能单独证明机器偏差或预测未来。</p>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-target="home"><span>⌂</span><small>首页</small></button>
+      <button class="nav-item" data-target="numbers"><span>▥</span><small>号码</small></button>
+      <button class="nav-item" data-target="zodiac"><span>◉</span><small>生肖</small></button>
+      <button class="nav-item" data-target="special"><span>★</span><small>特别号</small></button>
+      <button class="nav-item" data-target="machine"><span>⚙</span><small>机器</small></button>
+    </nav>
+  </div>
+  <script src="./config.js"></script>
+  <script src="./data-service.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
