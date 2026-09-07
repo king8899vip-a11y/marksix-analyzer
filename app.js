@@ -90,9 +90,14 @@ async function renderUpdateStatus(){
     const res=await fetch('./data/history.json?t='+Date.now(),{cache:'no-store'});if(!res.ok)throw new Error('History unavailable');const history=await res.json();
     let panel=document.querySelector('#historyPanel');if(!panel){panel=document.createElement('details');panel.id='historyPanel';panel.className='card explanation';document.querySelector('#home').append(panel);}
     panel.replaceChildren();const summary=document.createElement('summary');summary.textContent=`官方开奖记录（已保存 ${history.draws.length} 期）`;panel.append(summary);
-    history.draws.forEach(d=>{const row=document.createElement('p');row.textContent=`${d.date} · ${d.issue}：${d.main.map(n=>String(n).padStart(2,'0')).join(' ')} ｜ 特别号 ${String(d.special).padStart(2,'0')}`;panel.append(row);});
+    const note=document.createElement('p');note.className='fineprint';note.textContent=`收录范围：${history.draws.at(-1).date} 至 ${history.draws[0].date}。早期选号范围与现行规则不同，跨时期统计需分开处理。`;panel.append(note);
+    const label=document.createElement('label');label.textContent='选择年份：';const select=document.createElement('select');select.setAttribute('aria-label','开奖记录年份');
+    [...new Set(history.draws.map(d=>d.date.slice(0,4)))].forEach(year=>{const option=document.createElement('option');option.value=year;option.textContent=year+'年';select.append(option);});label.append(select);panel.append(label);
+    const rows=document.createElement('div');panel.append(rows);
+    const renderYear=()=>{rows.replaceChildren();const selected=history.draws.filter(d=>d.date.startsWith(select.value));const count=document.createElement('p');count.textContent=`共 ${selected.length} 期（由新到旧）`;rows.append(count);selected.forEach(d=>{const row=document.createElement('p');row.textContent=`${d.date} · ${d.issue}：${d.main.map(n=>String(n).padStart(2,'0')).join(' ')} ｜ 特别号 ${String(d.special).padStart(2,'0')}`;rows.append(row);});};select.addEventListener('change',renderYear);renderYear();
   }catch(e){status.textContent+=' 历史记录暂时无法读取，请稍后刷新。';}
 }
 async function refreshResults(){try{snapshot=await window.MarkSixData.getSnapshot();renderLatest();await renderUpdateStatus();}catch(e){const status=document.querySelector('#updateStatus');if(status)status.textContent='更新读取失败，当前保留上次数据。请检查网络后刷新。';}}
 boot();
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
+
