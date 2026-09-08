@@ -1,103 +1,21 @@
-let snapshot = null;
-
-function colorFor(n){
-  const red=[1,2,7,8,12,13,18,19,23,24,29,30,34,35,40,45,46];
-  const blue=[3,4,9,10,14,15,20,25,26,31,36,37,41,42,47,48];
-  return red.includes(n)?'red':blue.includes(n)?'blue':'green';
-}
-function ball(n, special=false){
-  const d=document.createElement('div'); d.className=`ball ${colorFor(n)}`;
-  d.textContent=String(n).padStart(2,'0'); if(special)d.title='特别号'; return d;
-}
-function setText(sel,val){ const el=document.querySelector(sel); if(el) el.textContent=val; }
-function renderLatest(){
-  setText('#sampleCount',snapshot.sampleCount);
-  setText('#hotNumber',String(snapshot.hotNumber||7).padStart(2,'0'));
-  setText('#hotZodiac',snapshot.hotZodiac||'—');
-  setText('#latestMeta',`${snapshot.latest.date} · ${snapshot.latest.issue}`);
-  const wrap=document.querySelector('#latestBalls'); wrap.innerHTML=''; snapshot.latest.main.forEach(n=>wrap.appendChild(ball(n)));
-  const sp=document.querySelector('#specialBall'); sp.innerHTML=''; sp.appendChild(ball(snapshot.latest.special,true));
-}
-function renderRankings(){
-  const nr=document.querySelector('#numberRanking'); nr.innerHTML='';
-  snapshot.numberRanking.forEach((x,i)=>nr.insertAdjacentHTML('beforeend',`<div class="rank-row"><div class="rank-no">${i+1}</div><div class="rank-main"><b>${String(x.n).padStart(2,'0')} · ${x.label}</b><small>${x.note}</small></div><div class="rank-value">${x.score}</div></div>`));
-  const zr=document.querySelector('#zodiacRanking'); zr.innerHTML='';
-  snapshot.zodiacRanking.forEach((x,i)=>zr.insertAdjacentHTML('beforeend',`<div class="rank-row"><div class="rank-no">${i+1}</div><div class="rank-main"><b>${x.name} · ${x.nums}</b><small>${x.note}</small></div><div class="rank-value">${x.trend}</div></div>`));
-  const sp=document.querySelector('#specialPool'); sp.innerHTML=''; snapshot.specialPool.forEach(n=>sp.insertAdjacentHTML('beforeend',`<span class="chip">${String(n).padStart(2,'0')}</span>`));
-}
-let pickMode='random';
-function sampleUnique(pool,count,weights=null){
-  const items=[...pool], out=[];
-  for(let k=0;k<count;k++){
-    let idx;
-    if(weights){
-      const w=items.map(n=>weights[n]||1), sum=w.reduce((a,b)=>a+b,0); let r=Math.random()*sum; idx=0;
-      for(;idx<w.length;idx++){r-=w[idx]; if(r<=0)break;}
-      if(idx>=items.length) idx=items.length-1;
-    } else idx=Math.floor(Math.random()*items.length);
-    out.push(items[idx]); items.splice(idx,1);
-  }
-  return out.sort((a,b)=>a-b);
-}
-function generatePick(){
-  const pool=Array.from({length:49},(_,i)=>i+1);
-  const weights={};
-  (snapshot?.numberRanking||[]).forEach((x,i)=>weights[x.n]=Math.max(1.2,3.6-i*.45));
-  (snapshot?.specialPool||[]).forEach(n=>weights[n]=Math.max(weights[n]||1,1.5));
-  const main=sampleUnique(pool,6,pickMode==='weighted'?weights:null);
-  const remain=pool.filter(n=>!main.includes(n));
-  const special=sampleUnique(remain,1,pickMode==='weighted'?weights:null)[0];
-  const wrap=document.querySelector('#pickResult'); wrap.innerHTML=''; main.forEach(n=>wrap.appendChild(ball(n)));
-  const plus=document.createElement('span'); plus.textContent='+'; plus.style.alignSelf='center'; plus.style.color='var(--muted)'; wrap.appendChild(plus); wrap.appendChild(ball(special,true));
-}
-function showPage(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));
-  document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.target===id));
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-function bindUI(){
-  document.addEventListener('click',e=>{
-    const nav=e.target.closest('[data-target]'); if(nav) showPage(nav.dataset.target);
-    if(e.target.closest('.back')) showPage('home');
-  });
-  document.querySelectorAll('.seg').forEach(b=>b.addEventListener('click',()=>{
-    document.querySelectorAll('.seg').forEach(x=>x.classList.remove('active')); b.classList.add('active'); pickMode=b.dataset.mode; generatePick();
-  }));
-  document.querySelector('#pickBtn').addEventListener('click',generatePick);
-  document.querySelector('#themeBtn').addEventListener('click',()=>document.body.classList.toggle('dark'));
-}
-async function boot(){
-  bindUI();
-  try{
-    snapshot = await window.MarkSixData.getSnapshot();
-  }catch(err){
-    console.error(err);
-    document.querySelector('.subtitle').textContent='数据暂时无法读取 · 请稍后刷新';
-    return;
-  }
-  renderLatest(); renderRankings(); generatePick();
-  await renderUpdateStatus();
-  setInterval(refreshResults, 30*60*1000);
-}
-async function renderUpdateStatus(){
-  let status=document.querySelector('#updateStatus');
-  if(!status){status=document.createElement('p');status.id='updateStatus';status.className='notice';document.querySelector('.latest-card').after(status);}
-  status.textContent=snapshot.checkedAt ? `开奖来源：香港赛马会 · 最近核对：${new Date(snapshot.checkedAt).toLocaleString('zh-CN',{timeZone:'Asia/Hong_Kong'})}（香港时间）。约每30分钟检查；排程可能延迟。` : '正在等待官方数据同步';
-  let warning=document.querySelector('#statisticsNotice');
-  if(!warning){warning=document.createElement('p');warning.id='statisticsNotice';warning.className='notice';document.querySelector('main').prepend(warning);}
-  warning.textContent='开奖记录自动更新；号码、生肖、机器分析仍为原示例快照（2026-09-05），尚未按新开奖重新计算。';
-  try{
-    const res=await fetch('./data/history.json?t='+Date.now(),{cache:'no-store'});if(!res.ok)throw new Error('History unavailable');const history=await res.json();
-    let panel=document.querySelector('#historyPanel');if(!panel){panel=document.createElement('details');panel.id='historyPanel';panel.className='card explanation';document.querySelector('#home').append(panel);}
-    panel.replaceChildren();const summary=document.createElement('summary');summary.textContent=`官方开奖记录（已保存 ${history.draws.length} 期）`;panel.append(summary);
-    const note=document.createElement('p');note.className='fineprint';note.textContent=`收录范围：${history.draws.at(-1).date} 至 ${history.draws[0].date}。早期选号范围与现行规则不同，跨时期统计需分开处理。`;panel.append(note);
-    const label=document.createElement('label');label.textContent='选择年份：';const select=document.createElement('select');select.setAttribute('aria-label','开奖记录年份');
-    [...new Set(history.draws.map(d=>d.date.slice(0,4)))].forEach(year=>{const option=document.createElement('option');option.value=year;option.textContent=year+'年';select.append(option);});label.append(select);panel.append(label);
-    const rows=document.createElement('div');panel.append(rows);
-    const renderYear=()=>{rows.replaceChildren();const selected=history.draws.filter(d=>d.date.startsWith(select.value));const count=document.createElement('p');count.textContent=`共 ${selected.length} 期（由新到旧）`;rows.append(count);selected.forEach(d=>{const row=document.createElement('p');row.textContent=`${d.date} · ${d.issue}：${d.main.map(n=>String(n).padStart(2,'0')).join(' ')} ｜ 特别号 ${String(d.special).padStart(2,'0')}`;rows.append(row);});};select.addEventListener('change',renderYear);renderYear();
-  }catch(e){status.textContent+=' 历史记录暂时无法读取，请稍后刷新。';}
-}
-async function refreshResults(){try{snapshot=await window.MarkSixData.getSnapshot();renderLatest();await renderUpdateStatus();}catch(e){const status=document.querySelector('#updateStatus');if(status)status.textContent='更新读取失败，当前保留上次数据。请检查网络后刷新。';}}
-boot();
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
-
+let snapshot=null,historyCache=null;
+const Z={马:[1,13,25,37,49],蛇:[2,14,26,38],龙:[3,15,27,39],兔:[4,16,28,40],虎:[5,17,29,41],牛:[6,18,30,42],鼠:[7,19,31,43],猪:[8,20,32,44],狗:[9,21,33,45],鸡:[10,22,34,46],猴:[11,23,35,47],羊:[12,24,36,48]};
+function colorFor(n){const r=[1,2,7,8,12,13,18,19,23,24,29,30,34,35,40,45,46],b=[3,4,9,10,14,15,20,25,26,31,36,37,41,42,47,48];return r.includes(n)?'red':b.includes(n)?'blue':'green'}
+function ball(n,s=false){const d=document.createElement('div');d.className=`ball ${colorFor(n)}`;d.textContent=String(n).padStart(2,'0');if(s)d.title='特别号';return d}
+function setText(s,v){const e=document.querySelector(s);if(e)e.textContent=v}
+function roi(h,n,name){const odds=name==='马'?.8:1.08;return ((h*odds-(n-h))/n)*100}
+function recalc(history){const draws=history.draws.filter(d=>d.issue>='26/047'&&d.issue<='26/999').sort((a,b)=>a.issue.localeCompare(b.issue)),n=draws.length;if(!n)return snapshot;
+ const counts=Object.fromEntries(Array.from({length:49},(_,i)=>[i+1,0]));draws.forEach(d=>d.main.forEach(x=>counts[x]++));
+ const zstats=Object.entries(Z).map(([name,nums])=>{let hits=0;draws.forEach(d=>{const seven=[...d.main,d.special];if(nums.some(x=>seven.includes(x)))hits++});const recent=draws.slice(-10).filter(d=>nums.some(x=>[...d.main,d.special].includes(x))).length;const hitRate=hits/n*100,R=roi(hits,n,name),breakEven=100/(1+(name==='马'?.8:1.08));const score=hitRate*.4+Math.max(0,Math.min(100,50+R*2))*.25+(recent*10)*.1+Math.max(0,100-Math.abs(recent*10-hitRate)*2)*.05;return{name,nums,hits,hitRate,R,recent,breakEven,score}}).sort((a,b)=>b.score-a.score);
+ const nr=Object.entries(counts).map(([k,v])=>({n:+k,v,label:Object.keys(Z).find(z=>Z[z].includes(+k))})).sort((a,b)=>b.v-a.v).slice(0,10);
+ const latest=draws.at(-1);return {...snapshot,updatedAt:history.checkedAt||new Date().toISOString(),checkedAt:history.checkedAt||new Date().toISOString(),latest,sampleCount:n,hotNumber:nr[0].n,hotZodiac:zstats[0].name,statisticsAsOf:latest.date,numberRanking:nr.map((x,i)=>({n:x.n,label:x.label,score:`${x.v}次 / ${n}期`,note:i===0?'当前正选频率最高':'第五代累计'})),zodiacRanking:zstats.map(x=>({name:x.name,nums:x.nums.map(v=>String(v).padStart(2,'0')).join(' · '),note:`命中 ${x.hits}/${n} (${x.hitRate.toFixed(1)}%) · 近10期 ${x.recent}/10 · ROI ${x.R>=0?'+':''}${x.R.toFixed(1)}%`,trend:`评分 ${x.score.toFixed(1)}`})),specialPool:nr.slice(0,6).map(x=>x.n)} }
+async function loadHistory(){const r=await fetch('./data/history.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('history');return r.json()}
+function renderLatest(){setText('#sampleCount',snapshot.sampleCount);setText('#hotNumber',String(snapshot.hotNumber||7).padStart(2,'0'));setText('#hotZodiac',snapshot.hotZodiac||'—');setText('#latestMeta',`${snapshot.latest.date} · ${snapshot.latest.issue}`);const w=document.querySelector('#latestBalls');w.innerHTML='';snapshot.latest.main.forEach(n=>w.appendChild(ball(n)));const sp=document.querySelector('#specialBall');sp.innerHTML='';sp.appendChild(ball(snapshot.latest.special,true))}
+function renderRankings(){const nr=document.querySelector('#numberRanking');nr.innerHTML='';snapshot.numberRanking.forEach((x,i)=>nr.insertAdjacentHTML('beforeend',`<div class="rank-row"><div class="rank-no">${i+1}</div><div class="rank-main"><b>${String(x.n).padStart(2,'0')} · ${x.label}</b><small>${x.note}</small></div><div class="rank-value">${x.score}</div></div>`));const zr=document.querySelector('#zodiacRanking');zr.innerHTML='';snapshot.zodiacRanking.forEach((x,i)=>zr.insertAdjacentHTML('beforeend',`<div class="rank-row"><div class="rank-no">${i+1}</div><div class="rank-main"><b>${x.name} · ${x.nums}</b><small>${x.note}</small></div><div class="rank-value">${x.trend}</div></div>`));const sp=document.querySelector('#specialPool');sp.innerHTML='';snapshot.specialPool.forEach(n=>sp.insertAdjacentHTML('beforeend',`<span class="chip">${String(n).padStart(2,'0')}</span>`))}
+let pickMode='random';function sampleUnique(pool,count,weights=null){const items=[...pool],out=[];for(let k=0;k<count;k++){let idx;if(weights){const w=items.map(n=>weights[n]||1),sum=w.reduce((a,b)=>a+b,0);let r=Math.random()*sum;idx=0;for(;idx<w.length;idx++){r-=w[idx];if(r<=0)break}if(idx>=items.length)idx=items.length-1}else idx=Math.floor(Math.random()*items.length);out.push(items[idx]);items.splice(idx,1)}return out.sort((a,b)=>a-b)}
+function generatePick(){const pool=Array.from({length:49},(_,i)=>i+1),weights={};(snapshot?.numberRanking||[]).forEach((x,i)=>weights[x.n]=Math.max(1.2,3.6-i*.3));const main=sampleUnique(pool,6,pickMode==='weighted'?weights:null),remain=pool.filter(n=>!main.includes(n)),special=sampleUnique(remain,1,pickMode==='weighted'?weights:null)[0],w=document.querySelector('#pickResult');w.innerHTML='';main.forEach(n=>w.appendChild(ball(n)));const plus=document.createElement('span');plus.textContent='+';plus.style.alignSelf='center';w.appendChild(plus);w.appendChild(ball(special,true))}
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.target===id));window.scrollTo({top:0,behavior:'smooth'})}
+function bindUI(){document.addEventListener('click',e=>{const nav=e.target.closest('[data-target]');if(nav)showPage(nav.dataset.target);if(e.target.closest('.back'))showPage('home')});document.querySelectorAll('.seg').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.seg').forEach(x=>x.classList.remove('active'));b.classList.add('active');pickMode=b.dataset.mode;generatePick()}));document.querySelector('#pickBtn').addEventListener('click',generatePick);document.querySelector('#themeBtn').addEventListener('click',()=>document.body.classList.toggle('dark'))}
+async function renderUpdateStatus(){let s=document.querySelector('#updateStatus');if(!s){s=document.createElement('p');s.id='updateStatus';s.className='notice';document.querySelector('.latest-card').after(s)}s.textContent=`开奖来源：香港赛马会 · 第五代样本 ${snapshot.sampleCount} 期 · 已自动重算号码/生肖/ROI。最近核对：${new Date(snapshot.checkedAt).toLocaleString('zh-CN',{timeZone:'Asia/Hong_Kong'})}`;let w=document.querySelector('#statisticsNotice');if(!w){w=document.createElement('p');w.id='statisticsNotice';w.className='notice';document.querySelector('main').prepend(w)}w.textContent='统计会随开奖记录自动重算。普通生肖按净赔1.08、马按净赔0.8计算历史ROI；历史表现不代表未来概率。'}
+async function refreshResults(){try{snapshot=await window.MarkSixData.getSnapshot();historyCache=await loadHistory();snapshot=recalc(historyCache);renderLatest();renderRankings();generatePick();await renderUpdateStatus()}catch(e){console.error(e)}}
+async function boot(){bindUI();await refreshResults();setInterval(refreshResults,30*60*1000)}boot();if('serviceWorker'in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}))}
