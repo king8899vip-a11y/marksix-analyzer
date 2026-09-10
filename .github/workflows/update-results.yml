@@ -45,3 +45,4 @@ jobs:
           path: _site
       - uses: actions/deploy-pages@v4
         id: deployment
+# manual refresh trigger: 2026-09-10
