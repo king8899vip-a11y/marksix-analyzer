@@ -1,8 +1,21 @@
 {
   "source": "香港赛马会",
   "sourceUrl": "https://bet.hkjc.com/ch/marksix/results",
-  "checkedAt": "2026-09-10T13:25:36.924Z",
+  "checkedAt": "2026-09-10T13:39:47.180Z",
   "draws": [
+    {
+      "issue": "26/098",
+      "date": "2026-09-10",
+      "main": [
+        22,
+        23,
+        31,
+        32,
+        35,
+        45
+      ],
+      "special": 34
+    },
     {
       "issue": "26/097",
       "date": "2026-09-08",
