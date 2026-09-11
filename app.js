@@ -9,4 +9,61 @@ function renderHistory(h){let p=document.querySelector('#historyPanel');if(!p){p
 let pickMode='random';function sampleUnique(pool,count,weights=null){const items=[...pool],out=[];for(let k=0;k<count;k++){let idx;if(weights){const w=items.map(n=>weights[n]||1),sum=w.reduce((a,b)=>a+b,0);let r=Math.random()*sum;idx=0;for(;idx<w.length;idx++){r-=w[idx];if(r<=0)break}if(idx>=items.length)idx=items.length-1}else idx=Math.floor(Math.random()*items.length);out.push(items[idx]);items.splice(idx,1)}return out.sort((a,b)=>a-b)}function generatePick(){const pool=Array.from({length:49},(_,i)=>i+1),weights={};(snapshot?.numberRanking||[]).forEach((x,i)=>weights[x.n]=Math.max(1.2,3.6-i*.3));const main=sampleUnique(pool,6,pickMode==='weighted'?weights:null),remain=pool.filter(n=>!main.includes(n)),special=sampleUnique(remain,1,pickMode==='weighted'?weights:null)[0],w=document.querySelector('#pickResult');w.innerHTML='';main.forEach(n=>w.appendChild(ball(n)));const plus=document.createElement('span');plus.textContent='+';w.appendChild(plus);w.appendChild(ball(special,true))}
 function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.target===id));window.scrollTo({top:0,behavior:'smooth'})}function bindUI(){document.addEventListener('click',e=>{const nav=e.target.closest('[data-target]');if(nav)showPage(nav.dataset.target);if(e.target.closest('.back'))showPage('home')});document.querySelectorAll('.seg').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.seg').forEach(x=>x.classList.remove('active'));b.classList.add('active');pickMode=b.dataset.mode;generatePick()}));document.querySelector('#pickBtn').addEventListener('click',generatePick);document.querySelector('#themeBtn').addEventListener('click',()=>document.body.classList.toggle('dark'))}
 function renderStatus(){let s=document.querySelector('#updateStatus');if(!s){s=document.createElement('p');s.id='updateStatus';s.className='notice';document.querySelector('.latest-card').after(s)}s.textContent=`开奖来源：香港赛马会 · 第五代样本 ${snapshot.sampleCount} 期 · 已自动重算号码/生肖/ROI。`}
-async function refreshResults(){try{snapshot=await window.MarkSixData.getSnapshot();historyCache=await loadHistory();snapshot=recalc(historyCache);renderLatest();renderRankings();renderHistory(historyCache);generatePick();renderStatus()}catch(e){console.error(e)}}async function boot(){bindUI();await refreshResults();setInterval(refreshResults,30*60*1000)}boot();if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+async function refreshResults(){try{snapshot=await window.MarkSixData.getSnapshot();historyCache=await loadHistory();snapshot=recalc(historyCache);renderLatest();renderRankings();renderHistory(historyCache);generatePick();renderStatus()}catch(e){console.error(e)}}async function boot(){bindUI();await refreshResults();startOfficialSync()}boot();if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+function verifiedOfficialDraws(rows){
+ if(!Array.isArray(rows))throw Error('官方数据格式异常');
+ const completed=rows.filter(r=>r.status==='Result').map(r=>{
+  const main=r.drawResult?.drawnNo,special=r.drawResult?.xDrawnNo;
+  if(!/^\d{4}$/.test(String(r.year))||!Number.isInteger(r.no)||r.no<1||r.no>999||
+   !Array.isArray(main)||main.length!==6||![...main,special].every(n=>Number.isInteger(n)&&n>=1&&n<=49)||new Set([...main,special]).size!==7)throw Error('官方号码未完整确认');
+  const date=String(r.drawDate).slice(0,10);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw Error('开奖日期异常');
+  return{issue:String(r.year).slice(-2)+'/'+String(r.no).padStart(3,'0'),date,main:[...main].sort((a,b)=>a-b),special};
+ });
+ if(!completed.length)throw Error('暂未取得已确认结果');
+ return completed.sort((a,b)=>b.date.localeCompare(a.date)||b.issue.localeCompare(a.issue));
+}
+function startOfficialSync(){
+ const card=document.createElement('div');card.className='card explanation';
+ const title=document.createElement('h3');title.textContent='官方结果同步';
+ const status=document.createElement('p');status.setAttribute('role','status');status.textContent='正在核对香港赛马会结果…';
+ const note=document.createElement('p');note.className='fineprint';note.textContent='网页可见时每30秒检查；官方发布完整结果后更新。号码按大小排列，不代表出球顺序；不是逐球直播。';
+ const button=document.createElement('button');button.className='primary';button.textContent='立即核对';
+ const link=document.createElement('a');link.href='https://www.hkjc.com/jctv/';link.target='_blank';link.rel='noopener noreferrer';link.textContent='官方攪珠直播说明 ↗';link.style.marginLeft='16px';
+ card.append(title,status,note,button,link);document.querySelector('.latest-card').after(card);
+ let busy=false,timer=null,lastChecked=null;
+ const query='query { lotteryDraws(lastNDraw: 10) { year no drawDate status drawResult { drawnNo xDrawnNo } } }';
+ async function check(){
+  if(busy||document.hidden)return;
+  clearTimeout(timer);busy=true;button.disabled=true;
+  try{
+   const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),12000);let response;
+   try{response=await fetch('https://info.cld.hkjc.com/graphql/base/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query}),signal:controller.signal});}finally{clearTimeout(timeout)}
+   if(!response.ok)throw Error('官方连接暂不可用');
+   const body=await response.json();if(body.errors)throw Error('官方服务暂不可用');
+   const draws=verifiedOfficialDraws(body.data?.lotteryDraws),latest=draws[0];
+   if(snapshot?.latest&&latest.date<snapshot.latest.date)throw Error('官方接口返回了较旧数据');
+   const changed=JSON.stringify(snapshot?.latest)!==JSON.stringify(latest);
+   if(snapshot&&changed){
+    snapshot.latest=latest;
+    if(historyCache?.draws){
+     const merged=new Map(historyCache.draws.map(d=>[d.issue,d]));draws.forEach(d=>merged.set(d.issue,d));
+     historyCache={...historyCache,draws:[...merged.values()].sort((a,b)=>b.date.localeCompare(a.date)||b.issue.localeCompare(a.issue)),checkedAt:new Date().toISOString()};
+     snapshot=recalc(historyCache);renderRankings();renderHistory(historyCache);
+    }
+    renderLatest();renderStatus();
+   }else if(!snapshot){
+    setText('#latestMeta',latest.date+' · '+latest.issue);
+    document.querySelector('#latestBalls').replaceChildren(...latest.main.map(n=>ball(n)));
+    document.querySelector('#specialBall').replaceChildren(ball(latest.special,true));
+   }
+   lastChecked=new Date().toLocaleString('zh-CN',{timeZone:'Asia/Hong_Kong',hour12:false});
+   status.textContent='已连接官方 · 最新确认 '+latest.issue+'期 · 核对时间 '+lastChecked+'（香港时间）';
+  }catch(e){
+   status.textContent='暂时无法核对官方结果，保留原显示数据。'+(lastChecked?'上次成功核对：'+lastChecked+'。':'尚未成功连接。')+'30秒后重试。';
+  }finally{busy=false;button.disabled=false;if(!document.hidden)timer=setTimeout(check,30000)}
+ }
+ button.addEventListener('click',check);
+ document.addEventListener('visibilitychange',()=>{clearTimeout(timer);if(!document.hidden)check()});
+ check();
+}
