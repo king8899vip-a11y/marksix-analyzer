@@ -32,13 +32,13 @@ function startOfficialSync(){
  const link=document.createElement('a');link.href='https://www.hkjc.com/jctv/';link.target='_blank';link.rel='noopener noreferrer';link.textContent='官方攪珠直播说明 ↗';link.style.marginLeft='16px';
  card.append(title,status,note,button,link);document.querySelector('.latest-card').after(card);
  let busy=false,timer=null,lastChecked=null;
- const query='query { lotteryDraws(lastNDraw: 10) { year no drawDate status drawResult { drawnNo xDrawnNo } } }';
+ const request={"variables":{"lastNDraw":100},"query":"\n        fragment lotteryDrawsFragment on LotteryDraw {\n    id\n    year\n    no\n    openDate\n    closeDate\n    drawDate\n    status\n    snowballCode\n    snowballName_en\n    snowballName_ch\n    lotteryPool {\n      sell\n      status\n      totalInvestment\n      jackpot\n      unitBet\n      estimatedPrize\n      derivedFirstPrizeDiv\n      lotteryPrizes {\n        type\n        winningUnit\n        dividend\n      }\n    }\n    drawResult {\n      drawnNo\n      xDrawnNo\n    }\n  }\n        query marksixResult($lastNDraw: Int, $startDate: String, $endDate: String, $drawType: LotteryDrawType) {\n            lotteryDraws(lastNDraw: $lastNDraw, startDate: $startDate, endDate: $endDate, drawType: $drawType) {\n              ...lotteryDrawsFragment\n            }\n        }\n    "};
  async function check(){
   if(busy||document.hidden)return;
   clearTimeout(timer);busy=true;button.disabled=true;
   try{
    const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),12000);let response;
-   try{response=await fetch('https://info.cld.hkjc.com/graphql/base/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query}),signal:controller.signal});}finally{clearTimeout(timeout)}
+   try{response=await fetch('https://info.cld.hkjc.com/graphql/base/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(request),signal:controller.signal});}finally{clearTimeout(timeout)}
    if(!response.ok)throw Error('官方连接暂不可用');
    const body=await response.json();if(body.errors)throw Error('官方服务暂不可用');
    const draws=verifiedOfficialDraws(body.data?.lotteryDraws),latest=draws[0];
