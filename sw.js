@@ -1,5 +1,5 @@
-const CACHE='marksix-analyzer-v2.0.0';
-const SHELL=['./','./index.html','./styles.css?v=1.7.0','./app.js?v=2.0.0','./config.js?v=1.7.0','./data-service.js?v=1.7.0','./manifest.webmanifest'];
+const CACHE='marksix-analyzer-v2.0.1';
+const SHELL=['./','./index.html','./styles.css?v=1.7.0','./app.js?v=2.0.1','./config.js?v=1.7.0','./data-service.js?v=1.7.0','./manifest.webmanifest'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)))});
 self.addEventListener('activate',e=>e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))])));
 self.addEventListener('fetch',e=>{
