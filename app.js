@@ -76,7 +76,17 @@ function bindUI(){document.addEventListener('click',e=>{const nav=e.target.close
 function renderModelSummary(h){const bt=walkForwardBacktest(h),top=snapshot.zodiacRanking?.[0];let e=document.querySelector('#modelSummary');if(!e){e=document.createElement('div');e.id='modelSummary';e.className='card explanation';document.querySelector('.hero').after(e)}const valid=bt.total>=20&&bt.roiPct>0&&bt.lastRoi>0;e.innerHTML=`<h3>模型 v2.0 · 固定规则</h3><p><b>当前单肖第一：</b>${top?.name||'—'}　<b>模型状态：</b>${valid?'样本外暂为正':'暂无稳定样本外优势'}</p><p class="fineprint">最近${bt.last20}期：${bt.lastWins}/${bt.last20}命中 · ROI ${bt.lastRoi>=0?'+':''}${bt.lastRoi.toFixed(1)}% ｜ 累计ROI ${bt.roiPct>=0?'+':''}${bt.roiPct.toFixed(1)}%</p><p class="fineprint">26/099：临时备用机事件，仅标记观察，不参与人工加权。</p>`}
 }
 function renderStatus(){let s=document.querySelector('#updateStatus');if(!s){s=document.createElement('p');s.id='updateStatus';s.className='notice';document.querySelector('.latest-card').after(s)}s.textContent=`开奖来源：香港赛马会 · 第五代样本 ${snapshot.sampleCount} 期 · 已自动重算号码/生肖/ROI/滚动回测。`}
-async function refreshResults(){try{snapshot=await window.MarkSixData.getSnapshot();historyCache=await loadHistory();snapshot=recalc(historyCache);renderLatest();renderRankings();renderBacktest(historyCache);renderModelSummary(historyCache);renderHistory(historyCache);generatePick();renderStatus()}catch(e){console.error(e)}}
+async function refreshResults(){try{
+ historyCache=await loadHistory();
+ snapshot=recalc(historyCache);
+ if(!snapshot)throw Error('无可用历史数据');
+ renderLatest();renderRankings();renderBacktest(historyCache);renderModelSummary(historyCache);renderHistory(historyCache);generatePick();renderStatus()
+}catch(e){
+ console.error(e);
+ let box=document.querySelector('#loadError');
+ if(!box){box=document.createElement('div');box.id='loadError';box.className='notice';document.querySelector('.hero').after(box)}
+ box.textContent='数据加载失败：'+(e&&e.message?e.message:'未知错误')+'。请刷新页面重试。'
+}}
 async function boot(){bindUI();await refreshResults();startOfficialSync()}boot();
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 function verifiedOfficialDraws(rows){if(!Array.isArray(rows))throw Error('官方数据格式异常');const completed=rows.filter(r=>r.status==='Result').map(r=>{const main=r.drawResult?.drawnNo,special=r.drawResult?.xDrawnNo;if(!/^\d{4}$/.test(String(r.year))||!Number.isInteger(r.no)||r.no<1||r.no>999||!Array.isArray(main)||main.length!==6||![...main,special].every(n=>Number.isInteger(n)&&n>=1&&n<=49)||new Set([...main,special]).size!==7)throw Error('官方号码未完整确认');const date=String(r.drawDate).slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw Error('开奖日期异常');return{issue:String(r.year).slice(-2)+'/'+String(r.no).padStart(3,'0'),date,main:[...main].sort((a,b)=>a-b),special}});if(!completed.length)throw Error('暂未取得已确认结果');return completed.sort((a,b)=>b.date.localeCompare(a.date)||b.issue.localeCompare(a.issue))}
