@@ -3,7 +3,7 @@ const Z={马:[1,13,25,37,49],蛇:[2,14,26,38],龙:[3,15,27,39],兔:[4,16,28,40],
 function colorFor(n){const r=[1,2,7,8,12,13,18,19,23,24,29,30,34,35,40,45,46],b=[3,4,9,10,14,15,20,25,26,31,36,37,41,42,47,48];return r.includes(n)?'red':b.includes(n)?'blue':'green'}
 function ball(n,s=false){const d=document.createElement('div');d.className=`ball ${colorFor(n)}`;d.textContent=String(n).padStart(2,'0');if(s)d.title='特别号';return d}
 function setText(s,v){const e=document.querySelector(s);if(e)e.textContent=v}
-function payout(name){return name==='马'?.8:1.08}
+function payout(name){return name==='马'?0.8:1.08}
 function roi(h,n,name){const o=payout(name);return((h*o-(n-h))/n)*100}
 function hit(draw,nums){return nums.some(x=>[...draw.main,draw.special].includes(x))}
 function zodiacStats(draws){
