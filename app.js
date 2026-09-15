@@ -18,16 +18,34 @@ function zodiacStats(draws){
 }
 function specialStats(draws){
  const n=draws.length;
- return Array.from({length:49},(_,i)=>{
+ const raw=Array.from({length:49},(_,i)=>{
   const num=i+1,idx=[];draws.forEach((d,j)=>{if(d.special===num)idx.push(j)});
-  const count=idx.length,gap=count?n-1-idx.at(-1):n,recent10=draws.slice(-10).filter(d=>d.special===num).length,recent20=draws.slice(-20).filter(d=>d.special===num).length;
-  const expected=n/49, deviation=expected?((count-expected)/Math.sqrt(Math.max(expected*(48/49),.01))):0;
-  const zodiacName=Object.keys(Z).find(z=>Z[z].includes(num)),zRank=zodiacStats(draws).findIndex(z=>z.name===zodiacName),zodiacScore=Math.max(0,12-zRank);
-  const mainCount=draws.filter(d=>d.main.includes(num)).length,mainRecent20=draws.slice(-20).filter(d=>d.main.includes(num)).length;
-  const frequencyScore=Math.min(40,count*6),momentumScore=Math.min(25,recent20*6+recent10*4),gapScore=Math.min(12,gap*.4),zodiacFactor=zodiacScore*.9,numberFactor=Math.min(11,mainCount*.35+mainRecent20*.8);
-  const score=frequencyScore+momentumScore+gapScore+zodiacFactor+numberFactor;
-  return{n:num,count,gap,recent10,recent20,deviation,score,zodiacName,parts:{frequency:frequencyScore,momentum:momentumScore,gap:gapScore,zodiac:zodiacFactor,number:numberFactor}}
- }).sort((a,b)=>b.score-a.score||b.gap-a.gap||a.n-b.n)
+  const count=idx.length,gap=count?n-1-idx.at(-1):n,recent5=draws.slice(-5).filter(d=>d.special===num).length,recent10=draws.slice(-10).filter(d=>d.special===num).length,recent20=draws.slice(-20).filter(d=>d.special===num).length;
+  const intervals=idx.slice(1).map((v,k)=>v-idx[k]),avgGap=intervals.length?intervals.reduce((a,b)=>a+b,0)/intervals.length:49;
+  const cycleFit=Math.max(0,1-Math.abs(gap-avgGap)/Math.max(avgGap,1));
+  const main20=draws.slice(-20).filter(d=>d.main.includes(num)).length;
+  const zodiacName=Object.keys(Z).find(z=>Z[z].includes(num)),zRank=zodiacStats(draws).findIndex(z=>z.name===zodiacName);
+  const parts={
+   recent:Math.min(30,recent5*12+recent10*6+recent20*2),
+   gap:Math.min(22,gap*.65),
+   cycle:cycleFit*18,
+   frequency:Math.min(12,count*3),
+   main:Math.min(10,main20*1.5),
+   zodiac:Math.max(0,7-zRank*.55)
+  };
+  const score=Object.values(parts).reduce((a,b)=>a+b,0);
+  return{n:num,count,gap,recent5,recent10,recent20,avgGap,cycleFit,main20,zodiacName,parts,score}
+ });
+ return raw.sort((a,b)=>b.score-a.score||b.gap-a.gap||a.n-b.n)
+}
+function specialWalkForwardBacktest(draws,minTrain=20,topK=6){
+ const rows=[];
+ for(let i=minTrain;i<draws.length;i++){
+  const rank=specialStats(draws.slice(0,i)),actual=draws[i].special,pos=rank.findIndex(x=>x.n===actual)+1;
+  rows.push({issue:draws[i].issue,actual,rank:pos,hit:pos>0&&pos<=topK})
+ }
+ const hits=rows.filter(x=>x.hit).length;
+ return{total:rows.length,hits,rate:rows.length?hits/rows.length*100:0,rows}
 }
 function recalc(history){
  const draws=history.draws.filter(d=>d.issue>='26/047'&&d.issue<='26/999').sort((a,b)=>a.issue.localeCompare(b.issue)),n=draws.length;
@@ -35,7 +53,7 @@ function recalc(history){
  const counts=Object.fromEntries(Array.from({length:49},(_,i)=>[i+1,0]));draws.forEach(d=>d.main.forEach(x=>counts[x]++));
  const zs=zodiacStats(draws),ss=specialStats(draws);
  const nr=Object.entries(counts).map(([k,v])=>({n:+k,v,label:Object.keys(Z).find(z=>Z[z].includes(+k))})).sort((a,b)=>b.v-a.v).slice(0,10),latest=draws.at(-1);
- return{...snapshot,checkedAt:history.checkedAt||new Date().toISOString(),latest,sampleCount:n,hotNumber:nr[0].n,hotZodiac:zs[0].name,numberRanking:nr.map((x,i)=>({n:x.n,label:x.label,score:`${x.v}次 / ${n}期`,note:i?'第五代累计':'当前正选频率最高'})),zodiacRanking:zs.map(x=>({name:x.name,nums:x.nums.map(v=>String(v).padStart(2,'0')).join(' · '),note:`命中 ${x.hits}/${n} (${x.hitRate.toFixed(1)}%) · 近10期 ${x.recent}/10 · ROI ${x.R>=0?'+':''}${x.R.toFixed(1)}%`,trend:`评分 ${x.score.toFixed(1)}`})),specialPool:ss.slice(0,6).map(x=>x.n),specialRanking:ss.slice(0,12)}
+ return{...snapshot,checkedAt:history.checkedAt||new Date().toISOString(),latest,sampleCount:n,hotNumber:nr[0].n,hotZodiac:zs[0].name,numberRanking:nr.map((x,i)=>({n:x.n,label:x.label,score:`${x.v}次 / ${n}期`,note:i?'第五代累计':'当前正选频率最高'})),zodiacRanking:zs.map(x=>({name:x.name,nums:x.nums.map(v=>String(v).padStart(2,'0')).join(' · '),note:`命中 ${x.hits}/${n} (${x.hitRate.toFixed(1)}%) · 近10期 ${x.recent}/10 · ROI ${x.R>=0?'+':''}${x.R.toFixed(1)}%`,trend:`评分 ${x.score.toFixed(1)}`})),specialPool:ss.slice(0,6).map(x=>x.n),specialRanking:ss.slice(0,12),specialBacktest:specialWalkForwardBacktest(draws)}
 }
 function walkForwardBacktest(history,minTrain=15){
  const draws=history.draws.filter(d=>d.issue>='26/047'&&d.issue<='26/999').sort((a,b)=>a.issue.localeCompare(b.issue));
@@ -53,7 +71,7 @@ function walkForwardBacktest(history,minTrain=15){
 }
 async function loadHistory(){const r=await fetch('./data/history.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('history');return r.json()}
 function renderLatest(){setText('#sampleCount',snapshot.sampleCount);setText('#hotNumber',String(snapshot.hotNumber).padStart(2,'0'));setText('#hotZodiac',snapshot.hotZodiac);setText('#latestMeta',`${snapshot.latest.date} · ${snapshot.latest.issue}`);const w=document.querySelector('#latestBalls');w.innerHTML='';snapshot.latest.main.forEach(n=>w.appendChild(ball(n)));const sp=document.querySelector('#specialBall');sp.innerHTML='';sp.appendChild(ball(snapshot.latest.special,true))}
-function renderRankings(){const nr=document.querySelector('#numberRanking');nr.innerHTML='';snapshot.numberRanking.forEach((x,i)=>nr.insertAdjacentHTML('beforeend',`<div class="rank-row"><div class="rank-no">${i+1}</div><div class="rank-main"><b>${String(x.n).padStart(2,'0')} · ${x.label}</b><small>${x.note}</small></div><div class="rank-value">${x.score}</div></div>`));const zr=document.querySelector('#zodiacRanking');zr.innerHTML='';snapshot.zodiacRanking.forEach((x,i)=>zr.insertAdjacentHTML('beforeend',`<div class="rank-row"><div class="rank-no">${i+1}</div><div class="rank-main"><b>${x.name} · ${x.nums}</b><small>${x.note}</small></div><div class="rank-value">${x.trend}</div></div>`));const sp=document.querySelector('#specialPool');sp.innerHTML='';snapshot.specialPool.forEach(n=>sp.insertAdjacentHTML('beforeend',`<span class="chip">${String(n).padStart(2,'0')}</span>`));let sr=document.querySelector('#specialRanking');if(sr){sr.innerHTML='';(snapshot.specialRanking||[]).forEach((x,i)=>sr.insertAdjacentHTML('beforeend',`<div class="rank-row"><div class="rank-no">${i+1}</div><div class="rank-main"><b>${String(x.n).padStart(2,'0')}</b><small>特别号 ${x.count}次 · 近20期 ${x.recent20}次 · 遗漏 ${x.gap}期 · ${x.zodiacName||''}</small></div><div class="rank-value" title="频率 ${x.parts?.frequency?.toFixed(1)||'-'} / 动量 ${x.parts?.momentum?.toFixed(1)||'-'} / 遗漏 ${x.parts?.gap?.toFixed(1)||'-'} / 生肖 ${x.parts?.zodiac?.toFixed(1)||'-'} / 号码 ${x.parts?.number?.toFixed(1)||'-'}">评分 ${x.score.toFixed(1)}</div></div>`))}}
+function renderRankings(){const nr=document.querySelector('#numberRanking');nr.innerHTML='';snapshot.numberRanking.forEach((x,i)=>nr.insertAdjacentHTML('beforeend',`<div class="rank-row"><div class="rank-no">${i+1}</div><div class="rank-main"><b>${String(x.n).padStart(2,'0')} · ${x.label}</b><small>${x.note}</small></div><div class="rank-value">${x.score}</div></div>`));const zr=document.querySelector('#zodiacRanking');zr.innerHTML='';snapshot.zodiacRanking.forEach((x,i)=>zr.insertAdjacentHTML('beforeend',`<div class="rank-row"><div class="rank-no">${i+1}</div><div class="rank-main"><b>${x.name} · ${x.nums}</b><small>${x.note}</small></div><div class="rank-value">${x.trend}</div></div>`));const sp=document.querySelector('#specialPool');sp.innerHTML='';snapshot.specialPool.forEach(n=>sp.insertAdjacentHTML('beforeend',`<span class="chip">${String(n).padStart(2,'0')}</span>`));let sr=document.querySelector('#specialRanking');if(sr){sr.innerHTML='';(snapshot.specialRanking||[]).forEach((x,i)=>sr.insertAdjacentHTML('beforeend',`<div class="rank-row"><div class="rank-no">${i+1}</div><div class="rank-main"><b>${String(x.n).padStart(2,'0')}</b><small>近5/10/20期 ${x.recent5}/${x.recent10}/${x.recent20} · 遗漏 ${x.gap}期 · 平均间隔 ${x.avgGap.toFixed(1)} · ${x.zodiacName||''}</small></div><div class="rank-value" title="近期 ${x.parts?.recent?.toFixed(1)||'-'} / 遗漏 ${x.parts?.gap?.toFixed(1)||'-'} / 周期 ${x.parts?.cycle?.toFixed(1)||'-'} / 历史频率 ${x.parts?.frequency?.toFixed(1)||'-'} / 正选活跃 ${x.parts?.main?.toFixed(1)||'-'} / 生肖辅助 ${x.parts?.zodiac?.toFixed(1)||'-'}">预测分 ${x.score.toFixed(1)}</div></div>`))}}
 function renderBacktest(h){
  const bt=walkForwardBacktest(h);
  let card=document.querySelector('#backtestCard');
