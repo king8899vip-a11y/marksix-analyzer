@@ -6,6 +6,8 @@ on:
   push:
     paths:
       - '.github/workflows/update-results.yml'
+      - 'scripts/update-results.mjs'
+      - 'scripts/hkjc-request.json'
 permissions:
   contents: write
   pages: write
@@ -16,6 +18,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -45,4 +48,3 @@ jobs:
           path: _site
       - uses: actions/deploy-pages@v4
         id: deployment
-# manual refresh trigger: 2026-09-10
