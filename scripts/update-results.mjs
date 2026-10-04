@@ -19,11 +19,11 @@ export function normalize(rows) {
   return draws.sort((a,b)=>b.date.localeCompare(a.date)||b.issue.localeCompare(a.issue));
 }
 async function run(){
-  const request=JSON.parse(await readFile(new URL('scripts/hkjc-request.json',root),'utf8'));
+  const request=JSON.parse(await readFile(new URL('scripts/hkjc-request.json',root),'utf8'));\n  // HKJC GraphQL is sensitive to request headers. Match the public results client more closely.\n  const headers={\n    'Content-Type':'application/json',\n    'Accept':'application/json',\n    'Origin':'https://bet.hkjc.com',\n    'Referer':'https://bet.hkjc.com/',\n    'User-Agent':'Mozilla/5.0 (compatible; MarkSixUpdater/2.1)'\n  };
   let response;
   for(let attempt=0;attempt<3;attempt++){
     try {
-      const res=await fetch('https://info.cld.hkjc.com/graphql/base/',{method:'POST',headers:{'Content-Type':'application/json',Origin:'https://bet.hkjc.com',Referer:'https://bet.hkjc.com/'},body:JSON.stringify(request),signal:AbortSignal.timeout(45000)});
+      const res=await fetch('https://info.cld.hkjc.com/graphql/base/',{method:'POST',headers,body:JSON.stringify(request),signal:AbortSignal.timeout(45000)});
       assert(res.ok, `HKJC HTTP ${res.status}`); response=await res.json(); assert(!response.errors, JSON.stringify(response.errors)); break;
     }catch(e){if(attempt===2)throw e; await new Promise(r=>setTimeout(r,3000));}
   }
