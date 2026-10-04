@@ -13,8 +13,8 @@ permissions:
   pages: write
   id-token: write
 concurrency:
-  group: official-results
-  cancel-in-progress: false
+  group: official-results-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   update:
     runs-on: ubuntu-latest
