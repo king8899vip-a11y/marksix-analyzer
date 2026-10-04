@@ -27,7 +27,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node scripts/update-results.mjs --test
       - run: node scripts/update-results.mjs
       - name: Save verified results
         run: |
