@@ -27,7 +27,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node scripts/update-results.mjs
+      - name: Fetch official results
+        shell: bash
+        run: |
+          node --check scripts/update-results.mjs
+          node scripts/update-results.mjs 2>&1 | tee updater.log
       - name: Save verified results
         run: |
           git config user.name 'github-actions[bot]'
