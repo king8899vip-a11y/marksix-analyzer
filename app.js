@@ -108,7 +108,7 @@ async function refreshResults(){try{
  historyCache=await loadHistory();
  snapshot=recalc(historyCache);
  if(!snapshot)throw Error('无可用历史数据');
- renderLatest();renderRankings();renderSpecialValidation();renderBacktest(historyCache);renderModelSummary(historyCache);renderHistory(historyCache);generatePick();renderStatus()
+ renderLatest();renderRankings();renderSpecialValidation();renderBacktest(historyCache);renderModelSummary(historyCache);renderHistory(historyCache);renderTrafficHub(historyCache);generatePick();renderStatus()
 }catch(e){
  console.error(e);
  let box=document.querySelector('#loadError');
@@ -122,3 +122,35 @@ function startOfficialSync(){const card=document.createElement('div');card.class
 const request={variables:{lastNDraw:100},query:'query marksixResult($lastNDraw: Int){lotteryDraws(lastNDraw:$lastNDraw){year no drawDate status drawResult{drawnNo xDrawnNo}}}'};
 async function check(){if(busy||document.hidden)return;clearTimeout(timer);busy=true;button.disabled=true;try{const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),12000);let response;try{response=await fetch('https://info.cld.hkjc.com/graphql/base/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(request),signal:controller.signal})}finally{clearTimeout(timeout)}if(!response.ok)throw Error('官方连接暂不可用');const body=await response.json();if(body.errors)throw Error('官方服务暂不可用');const draws=verifiedOfficialDraws(body.data?.lotteryDraws),latest=draws[0];const changed=JSON.stringify(snapshot?.latest)!==JSON.stringify(latest);if(snapshot&&changed){snapshot.latest=latest;if(historyCache?.draws){const merged=new Map(historyCache.draws.map(d=>[d.issue,d]));draws.forEach(d=>merged.set(d.issue,d));historyCache={...historyCache,draws:[...merged.values()].sort((a,b)=>b.date.localeCompare(a.date)||b.issue.localeCompare(a.issue)),checkedAt:new Date().toISOString()};snapshot=recalc(historyCache);renderRankings();renderSpecialValidation();renderBacktest(historyCache);renderModelSummary(historyCache);renderHistory(historyCache)}renderLatest();renderStatus()}lastChecked=new Date().toLocaleString('zh-CN',{timeZone:'Asia/Hong_Kong',hour12:false});status.textContent='已连接官方 · 最新确认 '+latest.issue+'期 · 核对时间 '+lastChecked+'（香港时间）'}catch(e){status.textContent='暂时无法核对官方结果，保留原显示数据。'+(lastChecked?'上次成功核对：'+lastChecked+'。':'')+'30秒后重试。'}finally{busy=false;button.disabled=false;if(!document.hidden)timer=setTimeout(check,30000)}}
 button.addEventListener('click',check);document.addEventListener('visibilitychange',()=>{clearTimeout(timer);if(!document.hidden)check()});check()}
+
+function zodiacOf(n){return Object.keys(Z).find(z=>Z[z].includes(n))||''}
+function renderTrafficHub(h){
+ const draws=h.draws.filter(d=>d.issue>='26/047'&&d.issue<='26/999').sort((a,b)=>a.issue.localeCompare(b.issue));
+ const latest=draws.at(-1),traffic=document.querySelector('#trafficHub'),nums=document.querySelector('#numberHub'),zods=document.querySelector('#zodiacHub');
+ if(!traffic||!nums||!zods||!latest)return;
+ traffic.innerHTML=[
+  ['最新开奖记录',latest.issue+' · '+latest.date,'latest'],
+  ['第五代号码热榜','按正选累计频率查看','numbers'],
+  ['生肖数据排行','累计命中率与最近10期','zodiac'],
+  ['特别号数据库','特别号独立统计','special']
+ ].map(x=>'<button class="traffic-link" data-target="'+x[2]+'"><b>'+x[0]+'</b><small>'+x[1]+'</small></button>').join('');
+ const counts=Object.fromEntries(Array.from({length:49},(_,i)=>[i+1,0]));draws.forEach(d=>d.main.forEach(n=>counts[n]++));
+ nums.innerHTML=Array.from({length:49},(_,i)=>{const n=i+1;return '<button class="hub-num" data-num="'+n+'">'+String(n).padStart(2,'0')+'<small>'+counts[n]+'次</small></button>'}).join('');
+ const zs=zodiacStats(draws);zods.innerHTML=zs.map(x=>'<button class="hub-zodiac" data-zodiac="'+x.name+'">'+x.name+'<small>'+x.hitRate.toFixed(1)+'%</small></button>').join('');
+ document.querySelectorAll('[data-num]').forEach(b=>b.onclick=()=>showNumberDetail(+b.dataset.num,draws));
+ document.querySelectorAll('[data-zodiac]').forEach(b=>b.onclick=()=>showZodiacDetail(b.dataset.zodiac,draws));
+}
+function detailHost(){
+ let d=document.querySelector('#hubDetail');if(!d){d=document.createElement('div');d.id='hubDetail';d.className='card detail-sheet';document.querySelector('#numberHub')?.after(d)}return d
+}
+function showNumberDetail(n,draws){
+ const main=draws.filter(d=>d.main.includes(n)),special=draws.filter(d=>d.special===n),last=[...draws].reverse().find(d=>d.main.includes(n)||d.special===n);
+ const recent10=draws.slice(-10).filter(d=>d.main.includes(n)||d.special===n).length,z=zodiacOf(n),d=detailHost();
+ d.innerHTML='<h3>'+String(n).padStart(2,'0')+'号 · '+z+'</h3><p>第五代正选出现 <b>'+main.length+'</b> 次｜特别号 <b>'+special.length+'</b> 次｜最近10期出现 <b>'+recent10+'</b> 期。</p><p>最近出现：'+(last?last.issue+' · '+last.date:'暂无')+'</p><p class="seo-copy">本页数据由开奖记录自动计算。历史频率只描述过去样本，不代表下一期开奖概率。</p>';
+ d.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function showZodiacDetail(name,draws){
+ const nums=Z[name],hits=draws.filter(d=>hit(d,nums)),recent=draws.slice(-10).filter(d=>hit(d,nums)).length,d=detailHost();
+ d.innerHTML='<h3>'+name+'生肖数据</h3><p>号码：'+nums.map(n=>String(n).padStart(2,'0')).join(' · ')+'</p><p>第五代累计命中 <b>'+hits.length+'/'+draws.length+'</b>（'+(hits.length/draws.length*100).toFixed(1)+'%）｜最近10期 <b>'+recent+'/10</b>。</p><p class="seo-copy">同一期出现多个同生肖号码只计算一次生肖命中，避免重复放大热度。</p>';
+ d.scrollIntoView({behavior:'smooth',block:'center'});
+}
