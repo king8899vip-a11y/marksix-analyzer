@@ -4,18 +4,28 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0a3fa8" />
-  <title>六合彩分析助手 · Mark Six Analyzer</title>
+  <title>六合彩数据中心｜开奖记录・号码・生肖・特别号统计</title>
+  <meta name="description" content="六合彩数据中心：自动更新开奖记录，提供1–49号码、12生肖、特别号及第五代搅珠机历史统计。数据分析仅供参考。">
+  <meta name="robots" content="index,follow">
+  <meta property="og:title" content="六合彩数据中心">
+  <meta property="og:description" content="开奖记录、号码、生肖、特别号与第五代搅珠机统计。">
   <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="stylesheet" href="./styles.css?v=1.7.0" />
+  <link rel="stylesheet" href="./styles.css?v=3.0.0" />
 </head>
 <body>
   <div class="app-shell">
-    <header class="topbar"><div><div class="brand">六合彩分析助手</div><div class="subtitle">Mark Six Analyzer · 数据参考，不预测未来</div></div><button id="themeBtn" class="icon-btn" aria-label="切换主题">◐</button></header>
+    <header class="topbar"><div><div class="brand">六合彩数据中心</div><div class="subtitle">Mark Six Data Hub · 自动更新 · 数据参考</div></div><button id="themeBtn" class="icon-btn" aria-label="切换主题">◐</button></header>
     <main>
       <section id="home" class="page active">
-        <div class="hero card"><div class="hero-kicker">第五代摇珠机监测</div><h1>用数据看趋势<br/>让选择更理性</h1><p>正选、特别号、生肖、换机前后分开统计。</p><div class="hero-stats"><div><strong id="sampleCount">—</strong><span>第五代样本期数</span></div><div><strong id="hotNumber">—</strong><span>重点异常号</span></div><div><strong id="hotZodiac">—</strong><span>重点生肖</span></div></div></div>
+        <div class="hero card"><div class="hero-kicker">V3.0 · 数据流量站</div><h1>开奖记录与<br/>号码数据中心</h1><p>自动更新开奖 · 49号码 · 12生肖 · 特别号 · 第五代搅珠机统计。</p><div class="hero-stats"><div><strong id="sampleCount">—</strong><span>第五代样本期数</span></div><div><strong id="hotNumber">—</strong><span>重点异常号</span></div><div><strong id="hotZodiac">—</strong><span>重点生肖</span></div></div></div>
         <div class="section-head"><h2>最新开奖</h2><span id="latestMeta" class="muted"></span></div><div class="card latest-card"><div id="latestBalls" class="balls"></div><div class="special-wrap"><span>特别号</span><div id="specialBall"></div></div></div>
         <div class="grid-2"><button class="card action-card nav-link" data-target="numbers"><span class="emoji">📊</span><b>号码分析</b><small>1–49长期频率与偏离</small></button><button class="card action-card nav-link" data-target="zodiac"><span class="emoji">🐭</span><b>生肖分析</b><small>按单号长期表现汇总</small></button><button class="card action-card nav-link" data-target="special"><span class="emoji">⭐</span><b>特别号分析</b><small>与6个正选完全分开</small></button><button class="card action-card nav-link" data-target="machine"><span class="emoji">⚙️</span><b>机器对比</b><small>第四代 vs 第五代</small></button></div>
+        <div class="section-head"><h2>热门数据入口</h2><span class="muted">自动生成</span></div>
+        <div id="trafficHub" class="traffic-grid"></div>
+        <div class="section-head"><h2>49号码数据库</h2><span class="muted">点击查看详情</span></div>
+        <div id="numberHub" class="number-hub card"></div>
+        <div class="section-head"><h2>12生肖数据库</h2><span class="muted">第五代样本</span></div>
+        <div id="zodiacHub" class="zodiac-hub card"></div>
         <div class="section-head"><h2>快速选号</h2><span class="muted">娱乐模拟</span></div><div class="card picker-card"><div class="picker-tabs"><button class="seg active" data-mode="random">纯随机</button><button class="seg" data-mode="weighted">历史观察型</button></div><div id="pickResult" class="balls pick-balls"></div><div class="pick-actions"><button id="pickBtn" class="primary">生成 6+1</button></div><p class="fineprint">“历史观察型”只按历史样本权重模拟；公平开奖下不会提高下一期客观概率。</p></div>
       </section>
       <section id="numbers" class="page"><div class="page-title"><button class="back">‹</button><div><h2>号码分析</h2><p>第五代机器 · 正选号码</p></div></div><div class="section-head"><h2>重点观察号码</h2><span class="muted">自动重算</span></div><div id="numberRanking" class="rank-list card"></div></section>
@@ -25,6 +35,6 @@
     </main>
     <nav class="bottom-nav"><button class="nav-item active" data-target="home"><span>⌂</span><small>首页</small></button><button class="nav-item" data-target="numbers"><span>▥</span><small>号码</small></button><button class="nav-item" data-target="zodiac"><span>◉</span><small>生肖</small></button><button class="nav-item" data-target="special"><span>★</span><small>特别号</small></button><button class="nav-item" data-target="machine"><span>⚙</span><small>机器</small></button></nav>
   </div>
-  <script src="./config.js?v=1.7.0"></script><script src="./data-service.js?v=1.7.0"></script><script src="./app.js?v=2.0.2"></script>
+  <script src="./config.js?v=1.7.0"></script><script src="./data-service.js?v=1.7.0"></script><script src="./app.js?v=3.0.0"></script>
 </body>
 </html>
