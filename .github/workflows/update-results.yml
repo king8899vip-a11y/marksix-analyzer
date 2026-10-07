@@ -8,6 +8,10 @@ on:
       - '.github/workflows/update-results.yml'
       - 'scripts/update-results.mjs'
       - 'scripts/hkjc-request.json'
+      - 'scripts/generate-pages.mjs'
+      - 'index.html'
+      - 'styles.css'
+      - 'app.js'
 permissions:
   contents: write
   pages: write
