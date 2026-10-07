@@ -32,11 +32,13 @@ jobs:
         run: |
           node --check scripts/update-results.mjs
           node scripts/update-results.mjs 2>&1 | tee updater.log
+      - name: Generate V3 SEO pages
+        run: node scripts/generate-pages.mjs
       - name: Save verified results
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/snapshot.json data/history.json
+          git add data/snapshot.json data/history.json draw number zodiac special machine sitemap.xml robots.txt
           if ! git diff --cached --quiet; then
             git commit -m 'Update verified HKJC draw results'
             git push
@@ -46,6 +48,8 @@ jobs:
           mkdir _site
           cp *.html *.js *.css manifest.webmanifest .nojekyll _site/
           cp -r data _site/
+          cp -r draw number zodiac special machine _site/
+          cp sitemap.xml robots.txt _site/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
