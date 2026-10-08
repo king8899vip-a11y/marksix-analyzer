@@ -59,5 +59,7 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
+      - name: Wait for parallel Pages deployment
+        run: sleep 75
       - uses: actions/deploy-pages@v4
         id: deployment
