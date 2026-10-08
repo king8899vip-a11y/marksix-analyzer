@@ -35,6 +35,7 @@ jobs:
       - name: Fetch official results
         shell: bash
         run: |
+          set -o pipefail
           node --check scripts/update-results.mjs
           node scripts/update-results.mjs 2>&1 | tee updater.log
       - name: Generate V3 SEO pages
