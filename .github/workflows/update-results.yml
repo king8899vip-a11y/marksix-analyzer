@@ -9,6 +9,8 @@ on:
       - 'scripts/update-results.mjs'
       - 'scripts/hkjc-request.json'
       - 'scripts/generate-pages.mjs'
+      - 'scripts/generate-portal.mjs'
+      - 'search.js'
       - 'index.html'
       - 'styles.css'
       - 'app.js'
@@ -42,7 +44,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/snapshot.json data/history.json draw number zodiac special machine sitemap.xml robots.txt
+          git add data/snapshot.json data/history.json draw number zodiac special machine archive index.html sitemap.xml robots.txt
           if ! git diff --cached --quiet; then
             git commit -m 'Update verified HKJC draw results'
             git pull --rebase origin main
