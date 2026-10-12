@@ -13,20 +13,18 @@ on:
       - 'styles.css'
       - 'app.js'
       - 'sw.js'
+      - 'config.js'
+      - 'data-service.js'
+      - 'scripts/test-update.mjs'
 permissions:
   contents: write
-  pages: write
-  id-token: write
 concurrency:
   group: official-results-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 jobs:
   update:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -36,7 +34,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          node --check scripts/update-results.mjs
+          node scripts/test-update.mjs
           node scripts/update-results.mjs 2>&1 | tee updater.log
       - name: Generate V3 SEO pages
         run: node scripts/generate-pages.mjs
@@ -47,19 +45,6 @@ jobs:
           git add data/snapshot.json data/history.json draw number zodiac special machine sitemap.xml robots.txt
           if ! git diff --cached --quiet; then
             git commit -m 'Update verified HKJC draw results'
-            git push
+            git pull --rebase origin main
+            git push origin HEAD:main
           fi
-      - name: Prepare website
-        run: |
-          mkdir _site
-          cp *.html *.js *.css manifest.webmanifest .nojekyll _site/
-          cp -r data _site/
-          cp -r draw number zodiac special machine _site/
-          cp sitemap.xml robots.txt _site/
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: _site
-      - name: Wait for parallel Pages deployment
-        run: sleep 75
-      - uses: actions/deploy-pages@v4
-        id: deployment

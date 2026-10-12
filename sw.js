@@ -1,17 +1,11 @@
-const CACHE='marksix-analyzer-v3.0.1';
-const SHELL=['./','./index.html','./styles.css?v=3.0.0','./app.js?v=3.0.0','./config.js?v=1.7.0','./data-service.js?v=1.7.0','./manifest.webmanifest'];
-self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)))});
-self.addEventListener('activate',e=>e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))])));
+const CACHE='marksix-analyzer-v3.0.2';
+const SHELL=['./','./index.html','./styles.css?v=3.0.2','./app.js?v=3.0.2','./config.js?v=3.0.2','./data-service.js?v=3.0.2','./manifest.webmanifest'];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
+self.addEventListener('activate',e=>e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('marksix-analyzer-')&&k!==CACHE).map(k=>caches.delete(k))))])));
 self.addEventListener('fetch',e=>{
-  if(e.request.method!=='GET') return;
-  const u=new URL(e.request.url);
-  if(u.origin!==self.location.origin)return;
-  const isData=u.pathname.endsWith('/data/snapshot.json')||u.pathname.endsWith('/data/history.json');
-  const isNav=e.request.mode==='navigate';
-  const isApp=/\.(js|css)$/.test(u.pathname);
-  if(isData||isNav||isApp){
-    e.respondWith(fetch(e.request,{cache:'no-store'}).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return r}).catch(()=>caches.match(e.request).then(r=>r||caches.match('./index.html'))));
-    return;
-  }
-  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));
+ const u=new URL(e.request.url);if(e.request.method!=='GET'||u.origin!==self.location.origin||!u.pathname.startsWith(new URL(self.registration.scope).pathname))return;
+ const isData=/\/data\/(snapshot|history)\.json$/.test(u.pathname);
+ // Strip only the timestamp: offline JSON keeps its own response and content type.
+ const key=isData?new Request(u.origin+u.pathname):e.request;
+ e.respondWith((async()=>{const cache=await caches.open(CACHE);try{const r=await fetch(e.request,{cache:'no-store'});if(r.ok)await cache.put(key,r.clone());return r}catch(err){const saved=await cache.match(key);if(saved)return saved;throw err}})());
 });

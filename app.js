@@ -17,6 +17,7 @@ function zodiacStats(draws){
  }).sort((a,b)=>b.score-a.score)
 }
 function specialStats(draws){
+ const zodiacRanks=zodiacStats(draws);
  const n=draws.length;
  const raw=Array.from({length:49},(_,i)=>{
   const num=i+1,idx=[];draws.forEach((d,j)=>{if(d.special===num)idx.push(j)});
@@ -24,7 +25,7 @@ function specialStats(draws){
   const intervals=idx.slice(1).map((v,k)=>v-idx[k]),avgGap=intervals.length?intervals.reduce((a,b)=>a+b,0)/intervals.length:49;
   const cycleFit=Math.max(0,1-Math.abs(gap-avgGap)/Math.max(avgGap,1));
   const main20=draws.slice(-20).filter(d=>d.main.includes(num)).length;
-  const zodiacName=Object.keys(Z).find(z=>Z[z].includes(num)),zRank=zodiacStats(draws).findIndex(z=>z.name===zodiacName);
+  const zodiacName=Object.keys(Z).find(z=>Z[z].includes(num)),zRank=zodiacRanks.findIndex(z=>z.name===zodiacName);
   const parts={
    recent:Math.min(30,recent5*12+recent10*6+recent20*2),
    gap:count?Math.min(10,(gap||0)*.3):0,
@@ -100,7 +101,7 @@ function renderHistory(h){let p=document.querySelector('#historyPanel');if(!p){p
 let pickMode='random';
 function sampleUnique(pool,count,weights=null){const items=[...pool],out=[];for(let k=0;k<count;k++){let idx;if(weights){const w=items.map(n=>weights[n]||1),sum=w.reduce((a,b)=>a+b,0);let r=Math.random()*sum;idx=0;for(;idx<w.length;idx++){r-=w[idx];if(r<=0)break}if(idx>=items.length)idx=items.length-1}else idx=Math.floor(Math.random()*items.length);out.push(items[idx]);items.splice(idx,1)}return out.sort((a,b)=>a-b)}
 function generatePick(){const pool=Array.from({length:49},(_,i)=>i+1),weights={};(snapshot?.numberRanking||[]).forEach((x,i)=>weights[x.n]=Math.max(1.2,3.6-i*.3));const main=sampleUnique(pool,6,pickMode==='weighted'?weights:null),remain=pool.filter(n=>!main.includes(n)),special=sampleUnique(remain,1,pickMode==='weighted'?weights:null)[0],w=document.querySelector('#pickResult');w.innerHTML='';main.forEach(n=>w.appendChild(ball(n)));const plus=document.createElement('span');plus.textContent='+';w.appendChild(plus);w.appendChild(ball(special,true))}
-function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.target===id));window.scrollTo({top:0,behavior:'smooth'})}
+function showPage(id){if(!document.getElementById(id)?.classList.contains("page"))return;document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.target===id));window.scrollTo({top:0,behavior:'smooth'})}
 function bindUI(){document.addEventListener('click',e=>{const nav=e.target.closest('[data-target]');if(nav)showPage(nav.dataset.target);if(e.target.closest('.back'))showPage('home')});document.querySelectorAll('.seg').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.seg').forEach(x=>x.classList.remove('active'));b.classList.add('active');pickMode=b.dataset.mode;generatePick()}));document.querySelector('#pickBtn').addEventListener('click',generatePick);document.querySelector('#themeBtn').addEventListener('click',()=>document.body.classList.toggle('dark'))}
 function renderModelSummary(h){const bt=walkForwardBacktest(h),top=snapshot.zodiacRanking?.[0];let e=document.querySelector('#modelSummary');if(!e){e=document.createElement('div');e.id='modelSummary';e.className='card explanation';document.querySelector('.hero').after(e)}const valid=bt.total>=20&&bt.roiPct>0&&bt.lastRoi>0;e.innerHTML=`<h3>模型 v2.0 · 固定规则</h3><p><b>当前单肖第一：</b>${top?.name||'—'}　<b>模型状态：</b>${valid?'样本外暂为正':'暂无稳定样本外优势'}</p><p class="fineprint">最近${bt.last20}期：${bt.lastWins}/${bt.last20}命中 · ROI ${bt.lastRoi>=0?'+':''}${bt.lastRoi.toFixed(1)}% ｜ 累计ROI ${bt.roiPct>=0?'+':''}${bt.roiPct.toFixed(1)}%</p><p class="fineprint">26/099：临时备用机事件，仅标记观察，不参与人工加权。</p>`}
 function renderStatus(){let s=document.querySelector('#updateStatus');if(!s){s=document.createElement('p');s.id='updateStatus';s.className='notice';document.querySelector('.latest-card').after(s)}s.textContent=`开奖来源：香港赛马会 · 第五代样本 ${snapshot.sampleCount} 期 · 已自动重算号码/生肖/ROI/滚动回测。`}
@@ -108,19 +109,19 @@ async function refreshResults(){try{
  historyCache=await loadHistory();
  snapshot=recalc(historyCache);
  if(!snapshot)throw Error('无可用历史数据');
- renderLatest();renderRankings();renderSpecialValidation();renderBacktest(historyCache);renderModelSummary(historyCache);renderHistory(historyCache);renderTrafficHub(historyCache);generatePick();renderStatus()
+ renderLatest();renderRankings();renderSpecialValidation();renderBacktest(historyCache);renderModelSummary(historyCache);renderHistory(historyCache);renderTrafficHub(historyCache);generatePick();renderStatus();document.querySelector("#loadError")?.remove()
 }catch(e){
  console.error(e);
  let box=document.querySelector('#loadError');
  if(!box){box=document.createElement('div');box.id='loadError';box.className='notice';document.querySelector('.hero').after(box)}
  box.textContent='数据加载失败：'+(e&&e.message?e.message:'未知错误')+'。请刷新页面重试。'
 }}
-async function boot(){bindUI();await refreshResults();startOfficialSync()}boot();
+async function boot(){bindUI();await refreshResults();startOfficialSync();setInterval(()=>{if(!document.hidden)refreshResults()},(window.APP_CONFIG?.REFRESH_MINUTES||30)*60000)}boot();
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 function verifiedOfficialDraws(rows){if(!Array.isArray(rows))throw Error('官方数据格式异常');const completed=rows.filter(r=>r.status==='Result').map(r=>{const main=r.drawResult?.drawnNo,special=r.drawResult?.xDrawnNo;if(!/^\d{4}$/.test(String(r.year))||!Number.isInteger(r.no)||r.no<1||r.no>999||!Array.isArray(main)||main.length!==6||![...main,special].every(n=>Number.isInteger(n)&&n>=1&&n<=49)||new Set([...main,special]).size!==7)throw Error('官方号码未完整确认');const date=String(r.drawDate).slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw Error('开奖日期异常');return{issue:String(r.year).slice(-2)+'/'+String(r.no).padStart(3,'0'),date,main:[...main].sort((a,b)=>a-b),special}});if(!completed.length)throw Error('暂未取得已确认结果');return completed.sort((a,b)=>b.date.localeCompare(a.date)||b.issue.localeCompare(a.issue))}
 function startOfficialSync(){const card=document.createElement('div');card.className='card explanation';const title=document.createElement('h3');title.textContent='官方结果同步';const status=document.createElement('p');status.setAttribute('role','status');status.textContent='正在核对香港赛马会结果…';const note=document.createElement('p');note.className='fineprint';note.textContent='网页可见时每30秒检查；官方发布完整结果后更新。号码按大小排列，不代表出球顺序。';const button=document.createElement('button');button.className='primary';button.textContent='立即核对';card.append(title,status,note,button);document.querySelector('.latest-card').after(card);let busy=false,timer=null,lastChecked=null;
 const request={variables:{lastNDraw:100},query:'query marksixResult($lastNDraw: Int){lotteryDraws(lastNDraw:$lastNDraw){year no drawDate status drawResult{drawnNo xDrawnNo}}}'};
-async function check(){if(busy||document.hidden)return;clearTimeout(timer);busy=true;button.disabled=true;try{const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),12000);let response;try{response=await fetch('https://info.cld.hkjc.com/graphql/base/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(request),signal:controller.signal})}finally{clearTimeout(timeout)}if(!response.ok)throw Error('官方连接暂不可用');const body=await response.json();if(body.errors)throw Error('官方服务暂不可用');const draws=verifiedOfficialDraws(body.data?.lotteryDraws),latest=draws[0];const changed=JSON.stringify(snapshot?.latest)!==JSON.stringify(latest);if(snapshot&&changed){snapshot.latest=latest;if(historyCache?.draws){const merged=new Map(historyCache.draws.map(d=>[d.issue,d]));draws.forEach(d=>merged.set(d.issue,d));historyCache={...historyCache,draws:[...merged.values()].sort((a,b)=>b.date.localeCompare(a.date)||b.issue.localeCompare(a.issue)),checkedAt:new Date().toISOString()};snapshot=recalc(historyCache);renderRankings();renderSpecialValidation();renderBacktest(historyCache);renderModelSummary(historyCache);renderHistory(historyCache)}renderLatest();renderStatus()}lastChecked=new Date().toLocaleString('zh-CN',{timeZone:'Asia/Hong_Kong',hour12:false});status.textContent='已连接官方 · 最新确认 '+latest.issue+'期 · 核对时间 '+lastChecked+'（香港时间）'}catch(e){status.textContent='暂时无法核对官方结果，保留原显示数据。'+(lastChecked?'上次成功核对：'+lastChecked+'。':'')+'30秒后重试。'}finally{busy=false;button.disabled=false;if(!document.hidden)timer=setTimeout(check,30000)}}
+async function check(){if(busy||document.hidden)return;clearTimeout(timer);busy=true;button.disabled=true;try{const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),12000);let response;try{response=await fetch('https://info.cld.hkjc.com/graphql/base/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(request),signal:controller.signal})}finally{clearTimeout(timeout)}if(!response.ok)throw Error('官方连接暂不可用');const body=await response.json();if(body.errors)throw Error('官方服务暂不可用');const draws=verifiedOfficialDraws(body.data?.lotteryDraws),latest=draws[0];const changed=JSON.stringify(snapshot?.latest)!==JSON.stringify(latest);if(snapshot&&changed){snapshot.latest=latest;if(historyCache?.draws){const merged=new Map(historyCache.draws.map(d=>[d.issue,d]));draws.forEach(d=>merged.set(d.issue,d));historyCache={...historyCache,draws:[...merged.values()].sort((a,b)=>b.date.localeCompare(a.date)||b.issue.localeCompare(a.issue)),checkedAt:new Date().toISOString()};snapshot=recalc(historyCache);renderRankings();renderSpecialValidation();renderBacktest(historyCache);renderModelSummary(historyCache);renderHistory(historyCache)}renderLatest();renderTrafficHub(historyCache);renderStatus()}lastChecked=new Date().toLocaleString('zh-CN',{timeZone:'Asia/Hong_Kong',hour12:false});status.textContent='已连接官方 · 最新确认 '+latest.issue+'期 · 核对时间 '+lastChecked+'（香港时间）'}catch(e){status.textContent='暂时无法核对官方结果，保留原显示数据。'+(lastChecked?'上次成功核对：'+lastChecked+'。':'')+'30秒后重试。'}finally{busy=false;button.disabled=false;if(!document.hidden)timer=setTimeout(check,30000)}}
 button.addEventListener('click',check);document.addEventListener('visibilitychange',()=>{clearTimeout(timer);if(!document.hidden)check()});check()}
 
 function zodiacOf(n){return Object.keys(Z).find(z=>Z[z].includes(n))||''}
@@ -129,14 +130,14 @@ function renderTrafficHub(h){
  const latest=draws.at(-1),traffic=document.querySelector('#trafficHub'),nums=document.querySelector('#numberHub'),zods=document.querySelector('#zodiacHub');
  if(!traffic||!nums||!zods||!latest)return;
  traffic.innerHTML=[
-  ['最新开奖记录',latest.issue+' · '+latest.date,'latest'],
-  ['第五代号码热榜','按正选累计频率查看','numbers'],
-  ['生肖数据排行','累计命中率与最近10期','zodiac'],
-  ['特别号数据库','特别号独立统计','special']
- ].map(x=>'<button class="traffic-link" data-target="'+x[2]+'"><b>'+x[0]+'</b><small>'+x[1]+'</small></button>').join('');
+  ['最新开奖记录',latest.issue+' · '+latest.date,'./draw/'+latest.issue.replace('/','-')+'/'],
+  ['第五代号码热榜','按正选累计频率查看','./machine/5th-gen/'],
+  ['生肖数据排行','累计命中率与最近10期','./zodiac/'+({马:'horse',蛇:'snake',龙:'dragon',兔:'rabbit',虎:'tiger',牛:'ox',鼠:'mouse',猪:'pig',狗:'dog',鸡:'rooster',猴:'monkey',羊:'goat'}[snapshot.hotZodiac])+'/'],
+  ['特别号数据库','特别号独立统计','./special/']
+ ].map(x=>'<a class="traffic-link" href="'+x[2]+'"><b>'+x[0]+'</b><small>'+x[1]+'</small></a>').join('');
  const counts=Object.fromEntries(Array.from({length:49},(_,i)=>[i+1,0]));draws.forEach(d=>d.main.forEach(n=>counts[n]++));
- nums.innerHTML=Array.from({length:49},(_,i)=>{const n=i+1;return '<button class="hub-num" data-num="'+n+'">'+String(n).padStart(2,'0')+'<small>'+counts[n]+'次</small></button>'}).join('');
- const zs=zodiacStats(draws);zods.innerHTML=zs.map(x=>'<button class="hub-zodiac" data-zodiac="'+x.name+'">'+x.name+'<small>'+x.hitRate.toFixed(1)+'%</small></button>').join('');
+ nums.innerHTML=Array.from({length:49},(_,i)=>{const n=i+1;return '<a class="hub-num" href="./number/'+String(n).padStart(2,'0')+'/">'+String(n).padStart(2,'0')+'<small>'+counts[n]+'次</small></button>'}).join('');
+ const slugs={马:"horse",蛇:"snake",龙:"dragon",兔:"rabbit",虎:"tiger",牛:"ox",鼠:"mouse",猪:"pig",狗:"dog",鸡:"rooster",猴:"monkey",羊:"goat"};const zs=zodiacStats(draws);zods.innerHTML=zs.map(x=>'<a class="hub-zodiac" href="./zodiac/'+slugs[x.name]+'/">'+x.name+'<small>'+x.hitRate.toFixed(1)+'%</small></button>').join('');
  document.querySelectorAll('[data-num]').forEach(b=>b.onclick=()=>showNumberDetail(+b.dataset.num,draws));
  document.querySelectorAll('[data-zodiac]').forEach(b=>b.onclick=()=>showZodiacDetail(b.dataset.zodiac,draws));
 }
