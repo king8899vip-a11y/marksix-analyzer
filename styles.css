@@ -31,3 +31,5 @@ a{color:var(--blue)}.traffic-link,.hub-num,.hub-zodiac{text-decoration:none;disp
 
 /* Match the latest draw's single-row number presentation. */
 .picker-card{padding:18px 12px}.pick-balls{display:grid;grid-template-columns:repeat(6,minmax(0,1fr)) 10px minmax(0,1fr);align-items:center;gap:4px}.pick-balls .ball{width:100%;max-width:40px;height:auto;aspect-ratio:1;font-size:clamp(11px,3.5vw,16px)}.pick-balls>span{text-align:center;font-size:16px;font-weight:700}
+
+.latest-card .special-wrap>span{display:none}
