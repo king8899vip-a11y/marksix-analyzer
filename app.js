@@ -131,7 +131,7 @@ function renderTrafficHub(h){
  if(!traffic||!nums||!zods||!latest)return;
  traffic.innerHTML=[
   ['最新开奖记录',latest.issue+' · '+latest.date,'./draw/'+latest.issue.replace('/','-')+'/'],
-  ['第五代号码热榜','按正选累计频率查看','./machine/5th-gen/'],
+  ['第五代号码热榜','按正选累计频率查看','./machine/compare/'],
   ['生肖数据排行','累计命中率与最近10期','./zodiac/'+({马:'horse',蛇:'snake',龙:'dragon',兔:'rabbit',虎:'tiger',牛:'ox',鼠:'mouse',猪:'pig',狗:'dog',鸡:'rooster',猴:'monkey',羊:'goat'}[snapshot.hotZodiac])+'/'],
   ['特别号数据库','特别号独立统计','./special/']
  ].map(x=>'<a class="traffic-link" href="'+x[2]+'"><b>'+x[0]+'</b><small>'+x[1]+'</small></a>').join('');

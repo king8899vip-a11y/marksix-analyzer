@@ -10,6 +10,9 @@ on:
       - 'scripts/hkjc-request.json'
       - 'scripts/generate-pages.mjs'
       - 'scripts/generate-portal.mjs'
+      - 'scripts/generate-comparison.mjs'
+      - 'analytics.js'
+      - 'scripts/test-comparison.mjs'
       - 'search.js'
       - 'index.html'
       - 'styles.css'
@@ -39,12 +42,14 @@ jobs:
           node scripts/test-update.mjs
           node scripts/update-results.mjs 2>&1 | tee updater.log
       - name: Generate V3 SEO pages
-        run: node scripts/generate-pages.mjs
+        run: |
+          node scripts/test-comparison.mjs
+          node scripts/generate-pages.mjs
       - name: Save verified results
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/snapshot.json data/history.json draw number zodiac special machine archive index.html sitemap.xml robots.txt
+          git add data/snapshot.json data/history.json data/machine-comparison.json draw number zodiac special machine archive index.html sitemap.xml robots.txt
           if ! git diff --cached --quiet; then
             git commit -m 'Update verified HKJC draw results'
             git pull --rebase origin main

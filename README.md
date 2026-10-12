@@ -47,3 +47,12 @@
 搜索支持号码、生肖、期号、日期、年份；旧期号进入年份页对应记录。首页号码和生肖目录在禁用 JavaScript 时仍可访问。自动更新脚本同步重新生成分类目录、年度记录和首页静态入口，并保存进分支供 Pages 发布。
 
 流量入口的定位是资料检索与内容导航；搜索引擎收录、排名与实际访问量需持续积累，版本上线不等于已获得流量。
+
+## V3.1.1 统计与机器专题
+
+- 首页和独立资料页加载既有 Cloudflare Web Analytics token 的官方 beacon，提供页面访问、来源、设备、地区与加载性能统计；搜索页及本地开发不加载 beacon，生成号码不作为自定义事件上报。
+- 当前使用独立页面路径观察资料访问热度；没有自定义点击事件接收后端。统计报表在 token 所属 Cloudflare 账户的 Web Analytics 后台查看，不在公开网站暴露账户密钥或捏造访问数据。客户端上报成功不等于已验证后台报表。
+- 新增 `/machine/compare/`：以 2026-05-05 为时期分界，换机前最后 N 期与换机后最近 N 期取等量样本；分开列出49个号码的正选与特别号次数、出现率差值。JSON 下载：`data/machine-comparison.json`。
+- 分界依据：https://corporate.hkjc.com/en-US/news-and-publications/corporate-news/2026-04/news_2026042101511 。接口没有逐期机器编号，所以不能据此把临时备用机归为某台主机；页面明确是时期对比，不能证明机器偏差。
+- 检查：`node scripts/test-comparison.mjs`；自动更新会重新生成对比页和 JSON。
+- Beacon 接入依据：https://developers.cloudflare.com/web-analytics/data-metrics/data-origin-and-collection/ 。

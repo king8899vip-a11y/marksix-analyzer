@@ -1,23 +1,8 @@
-/* Cookieless analytics; waits for the owner's Cloudflare site token. */
 (()=>{
-  window['ga-disable-G-HDWHHR5079']=true;
-  try { localStorage.removeItem('marksix-analytics-consent'); } catch {}
-  for(const item of document.cookie.split(';')){
-    const name=item.trim().split('=')[0];
-    if(!/^_ga(?:_|$)/.test(name))continue;
-    for(const path of ['/', '/marksix-analyzer', '/marksix-analyzer/'])
-      for(const domain of ['', '; domain='+location.hostname, '; domain=.'+location.hostname])
-        document.cookie=name+'=; Max-Age=0; path='+path+domain+'; SameSite=Lax';
-  }
-  const token=window.APP_CONFIG?.CLOUDFLARE_ANALYTICS_TOKEN;
-  const details=document.createElement('details');details.className='fineprint';
-  const title=document.createElement('summary');title.textContent='隐私说明';details.append(title);
-  const note=document.createElement('p');
-  note.textContent=token?'本站使用 Cloudflare Web Analytics 统计页面访问、来源、设备及大致地区，不使用统计 Cookie 或浏览器存储来识别访客，不记录生成的号码。':'本站已停用 Google Analytics，目前基础访问统计尚未启用。';
-  details.append(note);document.querySelector('main').append(details);
-  if(!/^[a-f0-9]{32}$/i.test(token||''))return;
-  const script=document.createElement('script');script.type='module';
-  script.src='https://static.cloudflareinsights.com/beacon.min.js';
-  script.setAttribute('data-cf-beacon',JSON.stringify({token,spa:false}));
-  document.head.append(script);
+ const token=window.APP_CONFIG?.CLOUDFLARE_ANALYTICS_TOKEN;
+ if(!/^[a-f0-9]{32}$/i.test(token||'')||document.querySelector('[data-cf-beacon]'))return;
+ const details=document.createElement('details');details.className='fineprint';const summary=document.createElement('summary');summary.textContent='访问统计与隐私';const note=document.createElement('p');note.textContent='本站使用 Cloudflare Web Analytics 统计页面访问与来源，不使用统计 Cookie，不记录生成的号码。搜索页不加载统计脚本。';details.append(summary,note);document.querySelector('main')?.append(details);
+ // Do not measure search-page visits or local development.
+ if(location.pathname.includes('/search/')||['localhost','127.0.0.1'].includes(location.hostname))return;
+ const script=document.createElement('script');script.type='module';script.src='https://static.cloudflareinsights.com/beacon.min.js';script.setAttribute('data-cf-beacon',JSON.stringify({token,spa:false}));script.onerror=()=>{script.dataset.loadStatus='unavailable'};document.head.append(script);
 })();
