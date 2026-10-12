@@ -1,7 +1,7 @@
 (async()=>{
  const input=document.getElementById('searchQuery'),status=document.getElementById('searchStatus'),list=document.getElementById('searchResults');
  const q=(new URLSearchParams(location.search).get('q')||'').trim().slice(0,40);input.value=q;if(!q)return;
- const base='/marksix-analyzer/';
+ const base=new URL('./',document.currentScript.src).pathname;
  const add=(path,title,note)=>{const li=document.createElement('li'),a=document.createElement('a'),b=document.createElement('b'),small=document.createElement('small');a.className='card catalog-item';a.href=base+path;b.textContent=title;small.textContent=note;a.append(b,small);li.append(a);list.append(li)};
  const number=q.match(/^(?:号码\s*)?(\d{1,2})\s*(?:号)?$/);if(number&&+number[1]>=1&&+number[1]<=49){const n=String(+number[1]).padStart(2,'0');add('number/'+n+'/',n+' 号资料','正选与特别号历史次数')}
  const names={horse:'马',snake:'蛇',dragon:'龙',rabbit:'兔',tiger:'虎',ox:'牛',mouse:'鼠',pig:'猪',dog:'狗',rooster:'鸡',monkey:'猴',goat:'羊'};

@@ -56,3 +56,11 @@
 - 分界依据：https://corporate.hkjc.com/en-US/news-and-publications/corporate-news/2026-04/news_2026042101511 。接口没有逐期机器编号，所以不能据此把临时备用机归为某台主机；页面明确是时期对比，不能证明机器偏差。
 - 检查：`node scripts/test-comparison.mjs`；自动更新会重新生成对比页和 JSON。
 - Beacon 接入依据：https://developers.cloudflare.com/web-analytics/data-metrics/data-origin-and-collection/ 。
+
+## 绑定 yjyq.com 的准备
+
+生成器读取根目录 CNAME：没有该文件时保持 GitHub Pages 地址；存在合法域名时 canonical、sitemap、robots 和 404 恢复路径切换为该域名。资料页改用相对资源与导航链接，搜索按脚本地址自动推导网站根目录。已验证项目子路径和自定义域名根路径两种部署形式。
+
+当前没有添加 CNAME，也没有修改 DDD DNS，避免解析未就绪时提前切换。正式接入步骤：先在 GitHub Pages Custom domain 保存 yjyq.com，再在 DDD 调整主域名 @ 的 A 记录为 185.199.108.153、185.199.109.153、185.199.110.153、185.199.111.153；www 的 CNAME 为 king8899vip-a11y.github.io（不带仓库路径）。仅替换目标主机记录，保留邮件等其他用途记录。待 DNS 和证书就绪后启用 Enforce HTTPS，并验证主页、资料页、搜索、canonical、sitemap、自动更新和统计上报。
+
+官方说明：https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site
