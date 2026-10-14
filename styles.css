@@ -36,3 +36,5 @@ a{color:var(--blue)}.traffic-link,.hub-num,.hub-zodiac{text-decoration:none;disp
 
 /* Zodiac labels below the latest seven numbers. */
 .latest-card .draw-number{display:flex;flex-direction:column;align-items:center;min-width:0;width:100%;gap:7px}.latest-card .draw-zodiac{font-size:13px;line-height:18px;color:var(--text);font-weight:500}.latest-card .special-wrap{align-items:flex-start}.latest-card .special-wrap::before{align-self:flex-start;line-height:1;margin-top:clamp(8px,2.5vw,12px)}
+
+.latest-card{align-items:start}
