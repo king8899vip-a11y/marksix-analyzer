@@ -1,5 +1,5 @@
 const ENDPOINT='https://info.cld.hkjc.com/graphql/base/';
-const QUERY={variables:{lastNDraw:100},query:'query marksixResult($lastNDraw:Int){lotteryDraws(lastNDraw:$lastNDraw){year no drawDate status drawResult{drawnNo xDrawnNo}}}'};
+const QUERY={"variables":{"lastNDraw":100},"query":"\n        fragment lotteryDrawsFragment on LotteryDraw {\n    id\n    year\n    no\n    openDate\n    closeDate\n    drawDate\n    status\n    snowballCode\n    snowballName_en\n    snowballName_ch\n    lotteryPool {\n      sell\n      status\n      totalInvestment\n      jackpot\n      unitBet\n      estimatedPrize\n      derivedFirstPrizeDiv\n      lotteryPrizes {\n        type\n        winningUnit\n        dividend\n      }\n    }\n    drawResult {\n      drawnNo\n      xDrawnNo\n    }\n  }\n        query marksixResult($lastNDraw: Int, $startDate: String, $endDate: String, $drawType: LotteryDrawType) {\n            lotteryDraws(lastNDraw: $lastNDraw, startDate: $startDate, endDate: $endDate, drawType: $drawType) {\n              ...lotteryDrawsFragment\n            }\n        }\n    "};
 export function validateRows(rows){
  if(!Array.isArray(rows))throw Error('Invalid official response');
  const draws=rows.filter(r=>r.status==='Result').map(r=>{
@@ -27,4 +27,5 @@ export default {async fetch(request,env,ctx){
   return new Response(body,{headers});
  }catch{return new Response('{"error":"official_unavailable"}',{status:503,headers});}
 }};
+
 
