@@ -33,3 +33,6 @@ a{color:var(--blue)}.traffic-link,.hub-num,.hub-zodiac{text-decoration:none;disp
 .picker-card{padding:18px 12px}.pick-balls{display:grid;grid-template-columns:repeat(6,minmax(0,1fr)) 10px minmax(0,1fr);align-items:center;gap:4px}.pick-balls .ball{width:100%;max-width:40px;height:auto;aspect-ratio:1;font-size:clamp(11px,3.5vw,16px)}.pick-balls>span{text-align:center;font-size:16px;font-weight:700}
 
 .latest-card .special-wrap>span{display:none}
+
+/* Zodiac labels below the latest seven numbers. */
+.latest-card .draw-number{display:flex;flex-direction:column;align-items:center;min-width:0;width:100%;gap:7px}.latest-card .draw-zodiac{font-size:13px;line-height:18px;color:var(--text);font-weight:500}.latest-card .special-wrap{align-items:flex-start}.latest-card .special-wrap::before{align-self:flex-start;line-height:1;margin-top:clamp(8px,2.5vw,12px)}
