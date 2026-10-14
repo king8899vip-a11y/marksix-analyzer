@@ -1,3 +1,4 @@
+(()=>{const base=new URL('.',document.currentScript.src);const script=document.createElement('script');script.src=new URL('language-toggle.js?v=1',base).href;script.defer=true;document.head.append(script)})();
 (()=>{
  const token=window.APP_CONFIG?.CLOUDFLARE_ANALYTICS_TOKEN;
  if(!/^[a-f0-9]{32}$/i.test(token||'')||document.querySelector('[data-cf-beacon]'))return;
