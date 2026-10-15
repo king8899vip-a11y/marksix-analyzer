@@ -11,7 +11,7 @@
   <meta property="og:description" content="开奖记录、号码、生肖、特别号与第五代搅珠机统计。">
   <link rel="canonical" href="https://yjyq.com/" />
   <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="stylesheet" href="./styles.css?v=3.1.4" />
+  <link rel="stylesheet" href="./styles.css?v=3.1.5" />
 </head>
 <body>
   <div class="app-shell">
@@ -24,10 +24,20 @@
         <div class="section-head"><h2>最新开奖</h2><span id="latestMeta" class="muted"></span></div><div class="card latest-card"><div id="latestBalls" class="balls"></div><div class="special-wrap"><span>特别号</span><div id="specialBall"></div></div></div>
 
         <section id="drawVideo" aria-labelledby="drawVideoTitle">
-          <div class="section-head"><h2 id="drawVideoTitle">开奖视频</h2><span class="muted">官方观看入口</span></div>
-          <div class="card explanation"><p>通过 TVB Plus 82 台观看六合彩开奖节目。点击下方按钮，将在新标签页打开 myTV SUPER 官方页面。</p>
-          <p><a class="primary" href="https://www.mytvsuper.com/tc/epg/82/TVB-Plus/" target="_blank" rel="noopener noreferrer">前往 TVB 官方观看 ↗</a></p>
-          <p class="fineprint">播出时间以官方节目表为准。观看可能受地区、登录及节目播放权限限制；本站不提供视频转播。</p></div>
+          <div class="section-head"><h2 id="drawVideoTitle">🔴 开奖直播</h2><span class="muted">站内观看 · 官方来源优先</span></div>
+          <div class="card live-video-card">
+            <div class="live-video-frame" id="liveVideoFrame">
+              <div class="live-video-placeholder" id="liveVideoPlaceholder">
+                <strong>开奖直播播放器</strong>
+                <p>等待取得获授权、支持第三方嵌入的直播地址。</p>
+                <small>当前未接入视频源，不会播放未经授权的转播。</small>
+              </div>
+            </div>
+            <div class="live-video-actions">
+              <a class="primary" href="https://www.mytvsuper.com/tc/epg/82/TVB-Plus/" target="_blank" rel="noopener noreferrer">打开 TVB Plus 官方直播 ↗</a>
+              <span class="fineprint">观看可能受地区、登录及节目权限限制。</span>
+            </div>
+          </div>
         </section>
         <div class="section-head"><h2>最新资料入口</h2><span class="muted">自动生成</span></div>
         <noscript><p><a href="./special/">特别号数据库</a> · <a href="./machine/5th-gen/">机器专题</a> · <a href="./number/01/">号码数据库</a></p></noscript><div id="trafficHub" class="traffic-grid"><a class="card catalog-item" href="./draw/26-109/"><b>最新开奖记录</b><small>26/109 · 2026-10-13</small></a><a class="card catalog-item" href="./machine/5th-gen/"><b>第五代统计专题</b><small></small></a></div>
