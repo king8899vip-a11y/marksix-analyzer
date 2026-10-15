@@ -1,17 +1,17 @@
 {
   "updatedAt": "2026-09-05T21:45:00+08:00",
   "latest": {
-    "issue": "26/109",
-    "date": "2026-10-13",
+    "issue": "26/110",
+    "date": "2026-10-15",
     "main": [
       3,
-      5,
-      9,
-      17,
-      21,
-      26
+      7,
+      8,
+      10,
+      36,
+      42
     ],
-    "special": 38
+    "special": 20
   },
   "sampleCount": 50,
   "hotNumber": 7,
@@ -94,7 +94,7 @@
     35,
     47
   ],
-  "checkedAt": "2026-10-15T12:00:30.652Z",
+  "checkedAt": "2026-10-15T16:04:22.872Z",
   "source": "香港赛马会",
   "sourceUrl": "https://bet.hkjc.com/ch/marksix/results",
   "statisticsAsOf": "2026-09-05"
