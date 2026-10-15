@@ -40,3 +40,6 @@ a{color:var(--blue)}.traffic-link,.hub-num,.hub-zodiac{text-decoration:none;disp
 .latest-card{align-items:start}
 
 .pick-balls{align-items:start}.pick-balls .draw-number{display:flex;flex-direction:column;align-items:center;min-width:0;width:100%;gap:7px}.pick-balls .draw-zodiac{font-size:13px;line-height:18px;color:var(--text);font-weight:500}.pick-balls>span{line-height:1;margin-top:clamp(8px,2.5vw,12px)}
+
+/* Live broadcast module: a 16:9 player area ready for an authorized embed. */
+.live-video-card{overflow:hidden}.live-video-frame{position:relative;aspect-ratio:16/9;background:#0c172b;color:#fff;display:grid;place-items:center}.live-video-frame iframe{width:100%;height:100%;border:0;position:absolute;inset:0}.live-video-placeholder{text-align:center;padding:22px;max-width:370px}.live-video-placeholder strong{font-size:18px}.live-video-placeholder p{font-size:13px;line-height:1.6;color:#d1d9e7}.live-video-placeholder small{font-size:11px;color:#9eafc7}.live-video-actions{padding:14px;display:flex;flex-wrap:wrap;align-items:center;gap:12px}.live-video-actions .primary{text-decoration:none;display:inline-block}.live-video-actions .fineprint{margin:0}
