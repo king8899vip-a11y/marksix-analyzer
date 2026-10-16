@@ -11,7 +11,7 @@
   <meta property="og:description" content="开奖记录、号码、生肖、特别号与第五代搅珠机统计。">
   <link rel="canonical" href="https://yjyq.com/" />
   <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="stylesheet" href="./styles.css?v=3.1.8" />
+  <link rel="stylesheet" href="./styles.css?v=3.1.9" />
 </head>
 <body>
   <div class="app-shell">
@@ -37,10 +37,10 @@
     </main>
     <dialog id="drawVideoDialog" aria-labelledby="drawVideoTitle">
       <div class="draw-dialog-heading"><h2 id="drawVideoTitle">搅珠视频 · 官方演示</h2><button id="drawVideoClose" type="button" aria-label="关闭视频">✕</button></div>
-      <video id="hkjcDrawVideo" controls playsinline preload="metadata" poster="https://campaign.hkjc.com/ch/jctv/images/section/core/marksix/marksixImg2Poster.png" aria-label="香港赛马会搅珠演示视频（非实时直播）">
+      <div class="draw-landscape-player" id="drawLandscapePlayer"><div class="draw-landscape-screen"><video id="hkjcDrawVideo" playsinline preload="metadata" poster="https://campaign.hkjc.com/ch/jctv/images/section/core/marksix/marksixImg2Poster.png" aria-label="香港赛马会搅珠演示视频（非实时直播）">
             <source src="https://streaminghkjc-a.akamaihd.net/hdflash/jctv2/marksixClip/marksix_2.mp4" type="video/mp4">
             你的浏览器不支持站内视频，请访问下方官方页面。
-          </video>
+          </video></div><div class="draw-player-controls"><button id="drawPlay" type="button">播放 / 暂停</button><button id="drawMute" type="button">静音</button><button id="drawFullscreen" type="button">全屏</button></div></div>
       <p>官方展示短片，非实时开奖直播。</p>
       <a href="https://www.hkjc.com/jctv/" target="_blank" rel="noopener noreferrer">前往 HKJC TV 官方页面 ↗</a>
     </dialog>
@@ -48,6 +48,6 @@
   </div>
   <script src="./config.js?v=3.1.0"></script><script src="./data-service.js?v=3.1.0"></script><script src="./app.js?v=3.1.4"></script>
   <script src="./analytics.js?v=3.1.1" defer></script>
-  <script src="./draw-video.js?v=3.1.8" defer></script>
+  <script src="./draw-video.js?v=3.1.9" defer></script>
 </body>
 </html>
