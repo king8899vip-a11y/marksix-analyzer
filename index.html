@@ -11,34 +11,24 @@
   <meta property="og:description" content="开奖记录、号码、生肖、特别号与第五代搅珠机统计。">
   <link rel="canonical" href="https://yjyq.com/" />
   <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="stylesheet" href="./styles.css?v=3.1.5" />
+  <link rel="stylesheet" href="./styles.css?v=3.1.6" />
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar"><div><div class="brand">六合彩数据中心</div><div class="subtitle">Mark Six Data Hub · 自动更新 · 数据参考</div></div><button id="themeBtn" class="icon-btn" aria-label="切换主题">◐</button></header>
     <main>
       <section id="home" class="page active">
+        <section id="drawVideo" class="official-tv-entry card" aria-labelledby="drawVideoTitle">
+          <a id="hkjcTvLink" href="https://www.hkjc.com/jctv/" target="_blank" rel="noopener noreferrer">
+            <strong id="drawVideoTitle">开奖直播 <span aria-hidden="true">↗</span></strong>
+            <span>前往香港赛马会官方 HKJC TV 页面（新窗口）</span>
+          </a>
+          <p>节目与播放安排以官方页面为准。</p>
+        </section>
         <div class="hero card"><div class="hero-kicker">V3.1 · 内容导航平台</div><h1>一站查找<br/>开奖与号码资料</h1><p>查开奖记录、找号码资料、浏览生肖统计。所有分类都有可直接分享的独立页面。</p><div class="hero-stats"><div><strong id="sampleCount">—</strong><span>第五代样本期数</span></div><div><strong id="hotNumber">—</strong><span>正选次数最高</span></div><div><strong id="hotZodiac">—</strong><span>样本生肖</span></div></div></div>
         <form class="portal-search card" action="./search/" method="get" role="search"><label for="portalQuery">搜索资料</label><div><input id="portalQuery" name="q" type="search" maxlength="40" placeholder="号码 07、生肖 鼠、期号 26/108" required><button class="primary" type="submit">查找</button></div><p class="fineprint">支持号码、生肖、期号、日期及年份。</p></form>
         <nav class="portal-categories grid-2" aria-label="资料分类"><a class="card action-card" href="./draw/"><b>开奖记录</b><small>最新开奖与历年记录</small></a><a class="card action-card" href="./number/"><b>号码资料</b><small>01–49 独立号码页面</small></a><a class="card action-card" href="./zodiac/"><b>生肖资料</b><small>12 生肖与号码对照</small></a><a class="card action-card" href="./special/"><b>特别号统计</b><small>独立历史次数统计</small></a></nav>
         <div class="section-head"><h2>最新开奖</h2><span id="latestMeta" class="muted"></span></div><div class="card latest-card"><div id="latestBalls" class="balls"></div><div class="special-wrap"><span>特别号</span><div id="specialBall"></div></div></div>
-
-        <section id="drawVideo" aria-labelledby="drawVideoTitle">
-          <div class="section-head"><h2 id="drawVideoTitle">🔴 开奖直播</h2><span class="muted">站内观看 · 官方来源优先</span></div>
-          <div class="card live-video-card">
-            <div class="live-video-frame" id="liveVideoFrame">
-              <div class="live-video-placeholder" id="liveVideoPlaceholder">
-                <strong>开奖直播播放器</strong>
-                <p>等待取得获授权、支持第三方嵌入的直播地址。</p>
-                <small>当前未接入视频源，不会播放未经授权的转播。</small>
-              </div>
-            </div>
-            <div class="live-video-actions">
-              <a class="primary" href="https://www.mytvsuper.com/tc/epg/82/TVB-Plus/" target="_blank" rel="noopener noreferrer">打开 TVB Plus 官方直播 ↗</a>
-              <span class="fineprint">观看可能受地区、登录及节目权限限制。</span>
-            </div>
-          </div>
-        </section>
         <div class="section-head"><h2>最新资料入口</h2><span class="muted">自动生成</span></div>
         <noscript><p><a href="./special/">特别号数据库</a> · <a href="./machine/5th-gen/">机器专题</a> · <a href="./number/01/">号码数据库</a></p></noscript><div id="trafficHub" class="traffic-grid"><a class="card catalog-item" href="./draw/26-110/"><b>最新开奖记录</b><small>26/110 · 2026-10-15</small></a><a class="card catalog-item" href="./machine/5th-gen/"><b>第五代统计专题</b><small></small></a></div>
         <div class="section-head"><h2>49号码数据库</h2><span class="muted">点击查看详情</span></div>
