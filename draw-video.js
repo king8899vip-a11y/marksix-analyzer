@@ -30,3 +30,6 @@ document.getElementById('drawFullscreen').addEventListener('click', () => {
   if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
   else if (drawPlayer.requestFullscreen) drawPlayer.requestFullscreen().catch(() => {});
 });
+
+const nextSchedule = document.getElementById('nextDrawSchedule');
+if (nextSchedule && new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Hong_Kong',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()) > nextSchedule.dataset.drawDate) nextSchedule.textContent = '下期开奖时间：等待官方更新';

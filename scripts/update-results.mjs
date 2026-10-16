@@ -1,3 +1,4 @@
+import {updateNextDraw} from './update-next-draw.mjs';
 import { pathToFileURL } from 'node:url';
 import { readFile, writeFile } from 'node:fs/promises';
 
@@ -67,6 +68,7 @@ async function main() {
   const oldHistory = JSON.parse(await readFile(historyUrl,'utf8'));
   const snapshot = JSON.parse(await readFile(snapshotUrl,'utf8'));
   const fetched = await fetchOfficial();
+  await updateNextDraw();
 
   fetched.sort((a,b)=>b.date.localeCompare(a.date)||b.issue.localeCompare(a.issue));
   if(new Set(fetched.map(d=>d.issue)).size!==fetched.length) fail('Duplicate official issue');
