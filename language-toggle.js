@@ -8,7 +8,7 @@
 
  const sizeButton=document.createElement('button');sizeButton.id='largeTextToggle';sizeButton.type='button';sizeButton.className='icon-btn';sizeButton.textContent='大字体';sizeButton.setAttribute('aria-label','切换大字体');
  let largeText=false;try{largeText=localStorage.getItem('marksix-large-text')==='true'}catch{}
- function applySize(){document.body.classList.toggle('large-text',largeText);sizeButton.setAttribute('aria-pressed',String(largeText));try{localStorage.setItem('marksix-large-text',String(largeText))}catch{}}
+ function applySize(){document.body.classList.toggle('large-text',largeText);sizeButton.textContent=largeText?'小字体':'大字体';sizeButton.setAttribute('aria-label',largeText?'切换为小字体':'切换为大字体');sizeButton.setAttribute('aria-pressed',String(largeText));try{localStorage.setItem('marksix-large-text',String(largeText))}catch{}}
  sizeButton.addEventListener('click',()=>{largeText=!largeText;applySize()});
  const style=document.createElement('style');style.textContent=`
  .reading-controls{display:flex;align-items:center;gap:6px;flex-shrink:0}.reading-controls .icon-btn{min-height:44px;color:var(--text);font-size:13px}.reading-controls #largeTextToggle{width:auto;white-space:nowrap;padding:8px 10px}.reading-controls #largeTextToggle[aria-pressed="true"]{background:var(--blue);color:#fff;border-color:var(--blue)}.reading-controls #languageToggle{min-width:54px!important}.topbar{flex-wrap:wrap;gap:10px}.topbar>.reading-controls{margin-left:auto}
