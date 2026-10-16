@@ -11,27 +11,17 @@
   <meta property="og:description" content="开奖记录、号码、生肖、特别号与第五代搅珠机统计。">
   <link rel="canonical" href="https://yjyq.com/" />
   <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="stylesheet" href="./styles.css?v=3.1.7" />
+  <link rel="stylesheet" href="./styles.css?v=3.1.8" />
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar"><div><div class="brand">六合彩数据中心</div><div class="subtitle">Mark Six Data Hub · 自动更新 · 数据参考</div></div><button id="themeBtn" class="icon-btn" aria-label="切换主题">◐</button></header>
     <main>
       <section id="home" class="page active">
-        <section id="drawVideo" class="official-tv-entry card" aria-labelledby="drawVideoTitle">
-          <h2 id="drawVideoTitle">搅珠视频 · 官方演示</h2>
-          <p>你截图中的 HKJC TV 展示短片，非实时开奖直播。点击播放即可站内观看。</p>
-          <video id="hkjcDrawVideo" controls playsinline preload="metadata" poster="https://campaign.hkjc.com/ch/jctv/images/section/core/marksix/marksixImg2Poster.png" aria-label="香港赛马会搅珠演示视频（非实时直播）">
-            <source src="https://streaminghkjc-a.akamaihd.net/hdflash/jctv2/marksixClip/marksix_2.mp4" type="video/mp4">
-            你的浏览器不支持站内视频，请访问下方官方页面。
-          </video>
-          <a id="hkjcTvLink" href="https://www.hkjc.com/jctv/" target="_blank" rel="noopener noreferrer"><span>开奖直播：前往 HKJC TV 官方页面 ↗（新窗口）</span></a>
-          <p>视频来源：香港赛马会。实际直播与节目安排以官方页面为准。</p>
-        </section>
         <div class="hero card"><div class="hero-kicker">V3.1 · 内容导航平台</div><h1>一站查找<br/>开奖与号码资料</h1><p>查开奖记录、找号码资料、浏览生肖统计。所有分类都有可直接分享的独立页面。</p><div class="hero-stats"><div><strong id="sampleCount">—</strong><span>第五代样本期数</span></div><div><strong id="hotNumber">—</strong><span>正选次数最高</span></div><div><strong id="hotZodiac">—</strong><span>样本生肖</span></div></div></div>
         <form class="portal-search card" action="./search/" method="get" role="search"><label for="portalQuery">搜索资料</label><div><input id="portalQuery" name="q" type="search" maxlength="40" placeholder="号码 07、生肖 鼠、期号 26/108" required><button class="primary" type="submit">查找</button></div><p class="fineprint">支持号码、生肖、期号、日期及年份。</p></form>
         <nav class="portal-categories grid-2" aria-label="资料分类"><a class="card action-card" href="./draw/"><b>开奖记录</b><small>最新开奖与历年记录</small></a><a class="card action-card" href="./number/"><b>号码资料</b><small>01–49 独立号码页面</small></a><a class="card action-card" href="./zodiac/"><b>生肖资料</b><small>12 生肖与号码对照</small></a><a class="card action-card" href="./special/"><b>特别号统计</b><small>独立历史次数统计</small></a></nav>
-        <div class="section-head"><h2>最新开奖</h2><span id="latestMeta" class="muted"></span></div><div class="card latest-card"><div id="latestBalls" class="balls"></div><div class="special-wrap"><span>特别号</span><div id="specialBall"></div></div></div>
+        <section class="draw-result-box card" aria-labelledby="latestDrawTitle"><div class="draw-result-heading"><h2 id="latestDrawTitle">香港六合彩</h2><button id="drawVideoOpen" type="button" aria-haspopup="dialog" aria-controls="drawVideoDialog">▶ 开奖现场</button></div><p id="latestMeta" class="muted"></p><div class="latest-card"><div id="latestBalls" class="balls"></div><div class="special-wrap"><span>特别号</span><div id="specialBall"></div></div></div><p class="draw-video-note">开奖现场为官方演示短片，非实时直播。</p></section>
         <div class="section-head"><h2>最新资料入口</h2><span class="muted">自动生成</span></div>
         <noscript><p><a href="./special/">特别号数据库</a> · <a href="./machine/5th-gen/">机器专题</a> · <a href="./number/01/">号码数据库</a></p></noscript><div id="trafficHub" class="traffic-grid"><a class="card catalog-item" href="./draw/26-110/"><b>最新开奖记录</b><small>26/110 · 2026-10-15</small></a><a class="card catalog-item" href="./machine/5th-gen/"><b>第五代统计专题</b><small></small></a></div>
         <div class="section-head"><h2>49号码数据库</h2><span class="muted">点击查看详情</span></div>
@@ -45,9 +35,19 @@
       <section id="special" class="page"><div class="page-title"><button class="back">‹</button><div><h2>特别号分析</h2><p>每期1个特别号，理论单号概率 1/49</p></div></div><div class="section-head"><h2>特别号观察池</h2></div><div class="card chips" id="specialPool"></div><div class="section-head"><h2>特别号独立排名</h2><span class="muted">不引用正选频率</span></div><div id="specialRanking" class="rank-list card"></div></section>
       <section id="machine" class="page"><div class="page-title"><button class="back" aria-label="返回首页">‹</button><div><h2>机器对比</h2><p>换机前后等量样本</p></div></div><div class="card explanation"><h3>两组各 64 期</h3><p>换机前 2025-11-04–2026-05-02<br>换机后 2026-05-05–2026-10-15</p><p><a class="primary" href="./machine/compare/">查看完整号码对比</a></p><p>按时期分组；不证明机器偏差或未来概率。</p></div></section>
     </main>
+    <dialog id="drawVideoDialog" aria-labelledby="drawVideoTitle">
+      <div class="draw-dialog-heading"><h2 id="drawVideoTitle">搅珠视频 · 官方演示</h2><button id="drawVideoClose" type="button" aria-label="关闭视频">✕</button></div>
+      <video id="hkjcDrawVideo" controls playsinline preload="metadata" poster="https://campaign.hkjc.com/ch/jctv/images/section/core/marksix/marksixImg2Poster.png" aria-label="香港赛马会搅珠演示视频（非实时直播）">
+            <source src="https://streaminghkjc-a.akamaihd.net/hdflash/jctv2/marksixClip/marksix_2.mp4" type="video/mp4">
+            你的浏览器不支持站内视频，请访问下方官方页面。
+          </video>
+      <p>官方展示短片，非实时开奖直播。</p>
+      <a href="https://www.hkjc.com/jctv/" target="_blank" rel="noopener noreferrer">前往 HKJC TV 官方页面 ↗</a>
+    </dialog>
     <nav class="bottom-nav"><button class="nav-item active" data-target="home"><span>⌂</span><small>首页</small></button><button class="nav-item" data-target="numbers"><span>▥</span><small>号码</small></button><button class="nav-item" data-target="zodiac"><span>◉</span><small>生肖</small></button><button class="nav-item" data-target="special"><span>★</span><small>特别号</small></button><button class="nav-item" data-target="machine"><span>⚙</span><small>机器</small></button></nav>
   </div>
   <script src="./config.js?v=3.1.0"></script><script src="./data-service.js?v=3.1.0"></script><script src="./app.js?v=3.1.4"></script>
   <script src="./analytics.js?v=3.1.1" defer></script>
+  <script src="./draw-video.js?v=3.1.8" defer></script>
 </body>
 </html>
