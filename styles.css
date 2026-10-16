@@ -46,3 +46,5 @@ a{color:var(--blue)}.traffic-link,.hub-num,.hub-zodiac{text-decoration:none;disp
 
 /* Official HKJC TV entry: visible before the home hero on mobile. */
 .official-tv-entry{margin-bottom:14px;border:2px solid #a63a12;overflow:hidden}.official-tv-entry a{display:flex;flex-direction:column;gap:7px;min-height:88px;padding:16px 18px;background:#9d3210;color:#fff;text-decoration:none;touch-action:manipulation}.official-tv-entry strong{display:flex;justify-content:space-between;font-size:24px;line-height:1.3}.official-tv-entry a>span{font-size:13px;line-height:1.6}.official-tv-entry a:hover{background:#7d270c}.official-tv-entry a:focus-visible{outline:3px solid #fff;outline-offset:-6px}.official-tv-entry p{margin:0;padding:10px 18px;font-size:12px;line-height:1.6;color:var(--text)}
+
+.official-tv-entry h2{margin:16px 18px 0;font-size:22px}.official-tv-entry video{display:block;width:100%;aspect-ratio:16/9;background:#091c38}.official-tv-entry a{min-height:48px;justify-content:center}

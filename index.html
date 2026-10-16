@@ -11,7 +11,7 @@
   <meta property="og:description" content="开奖记录、号码、生肖、特别号与第五代搅珠机统计。">
   <link rel="canonical" href="https://yjyq.com/" />
   <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="stylesheet" href="./styles.css?v=3.1.6" />
+  <link rel="stylesheet" href="./styles.css?v=3.1.7" />
 </head>
 <body>
   <div class="app-shell">
@@ -19,11 +19,14 @@
     <main>
       <section id="home" class="page active">
         <section id="drawVideo" class="official-tv-entry card" aria-labelledby="drawVideoTitle">
-          <a id="hkjcTvLink" href="https://www.hkjc.com/jctv/" target="_blank" rel="noopener noreferrer">
-            <strong id="drawVideoTitle">开奖直播 <span aria-hidden="true">↗</span></strong>
-            <span>前往香港赛马会官方 HKJC TV 页面（新窗口）</span>
-          </a>
-          <p>节目与播放安排以官方页面为准。</p>
+          <h2 id="drawVideoTitle">搅珠视频 · 官方演示</h2>
+          <p>你截图中的 HKJC TV 展示短片，非实时开奖直播。点击播放即可站内观看。</p>
+          <video id="hkjcDrawVideo" controls playsinline preload="metadata" poster="https://campaign.hkjc.com/ch/jctv/images/section/core/marksix/marksixImg2Poster.png" aria-label="香港赛马会搅珠演示视频（非实时直播）">
+            <source src="https://streaminghkjc-a.akamaihd.net/hdflash/jctv2/marksixClip/marksix_2.mp4" type="video/mp4">
+            你的浏览器不支持站内视频，请访问下方官方页面。
+          </video>
+          <a id="hkjcTvLink" href="https://www.hkjc.com/jctv/" target="_blank" rel="noopener noreferrer"><span>开奖直播：前往 HKJC TV 官方页面 ↗（新窗口）</span></a>
+          <p>视频来源：香港赛马会。实际直播与节目安排以官方页面为准。</p>
         </section>
         <div class="hero card"><div class="hero-kicker">V3.1 · 内容导航平台</div><h1>一站查找<br/>开奖与号码资料</h1><p>查开奖记录、找号码资料、浏览生肖统计。所有分类都有可直接分享的独立页面。</p><div class="hero-stats"><div><strong id="sampleCount">—</strong><span>第五代样本期数</span></div><div><strong id="hotNumber">—</strong><span>正选次数最高</span></div><div><strong id="hotZodiac">—</strong><span>样本生肖</span></div></div></div>
         <form class="portal-search card" action="./search/" method="get" role="search"><label for="portalQuery">搜索资料</label><div><input id="portalQuery" name="q" type="search" maxlength="40" placeholder="号码 07、生肖 鼠、期号 26/108" required><button class="primary" type="submit">查找</button></div><p class="fineprint">支持号码、生肖、期号、日期及年份。</p></form>
