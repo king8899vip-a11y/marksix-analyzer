@@ -24,6 +24,9 @@ on:
       - 'config.js'
       - 'data-service.js'
       - 'scripts/test-update.mjs'
+      - 'scripts/update-next-draw.mjs'
+      - 'scripts/test-schedule.mjs'
+      - 'schedule.js'
 permissions:
   contents: write
 concurrency:
@@ -43,6 +46,7 @@ jobs:
         run: |
           set -o pipefail
           node scripts/test-update.mjs
+          node scripts/test-schedule.mjs
           node scripts/update-results.mjs 2>&1 | tee updater.log
       - name: Generate V3 SEO pages
         run: |

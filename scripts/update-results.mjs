@@ -1,3 +1,4 @@
+import schedule from '../schedule.js';
 import {updateNextDraw} from './update-next-draw.mjs';
 import { pathToFileURL } from 'node:url';
 import { readFile, writeFile } from 'node:fs/promises';
@@ -68,7 +69,7 @@ async function main() {
   const oldHistory = JSON.parse(await readFile(historyUrl,'utf8'));
   const snapshot = JSON.parse(await readFile(snapshotUrl,'utf8'));
   const fetched = await fetchOfficial();
-  await updateNextDraw();
+
 
   fetched.sort((a,b)=>b.date.localeCompare(a.date)||b.issue.localeCompare(a.issue));
   if(new Set(fetched.map(d=>d.issue)).size!==fetched.length) fail('Duplicate official issue');
@@ -81,15 +82,20 @@ async function main() {
   if (oldHistory.draws?.[0] && draws[0].date < oldHistory.draws[0].date) fail('Official source regressed');
 
   const checkedAt=new Date().toISOString();
+  const nextDraw=await updateNextDraw(draws[0]);
   const source='香港赛马会';
   const sourceUrl='https://bet.hkjc.com/ch/marksix/results';
 
-  await writeFile(historyUrl, JSON.stringify({...oldHistory,source,sourceUrl,checkedAt,draws},null,2)+'\n');
+  await writeFile(historyUrl, JSON.stringify({...oldHistory,source,sourceUrl,checkedAt,nextDraw,draws},null,2)+'\n');
   snapshot.latest=draws[0];
+  snapshot.nextDraw=nextDraw;
   snapshot.checkedAt=checkedAt;
   snapshot.source=source;
   snapshot.sourceUrl=sourceUrl;
   await writeFile(snapshotUrl,JSON.stringify(snapshot,null,2)+'\n');
+  const indexUrl=new URL('index.html',root);
+  const html=await readFile(indexUrl,'utf8');
+  await writeFile(indexUrl,html.replace(/<p id="nextDrawSchedule"[^>]*>[\s\S]*?<\/p>/,'<p id="nextDrawSchedule" class="next-draw-schedule">'+schedule.text(nextDraw,draws[0])+'</p>'));
   console.log(`SUCCESS latest=${draws[0].issue} date=${draws[0].date} total=${draws.length}`);
 }
 
