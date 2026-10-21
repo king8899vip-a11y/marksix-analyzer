@@ -68,3 +68,5 @@ body.dark{--bg:#101925;--card:#1b2737;--text:#eef3fa;--muted:#b0bdd0;--blue:#8bb
 .rank-no{background:var(--soft);color:var(--text);font-variant-numeric:tabular-nums}.back{color:var(--text)}
 
 .official-live-link{display:block;margin:14px 0;padding:15px 18px;background:#b51f28;color:#fff!important;font-weight:800;font-size:18px;text-align:center;border-radius:10px;text-decoration:none}.official-live-link:focus-visible{outline:3px solid #f5b800;outline-offset:3px}
+
+.next-draw-schedule{overflow-wrap:anywhere}
