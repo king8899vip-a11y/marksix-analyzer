@@ -11,8 +11,8 @@ const assert=require('node:assert/strict');
    const response=await page.goto(base+'?verify='+Date.now());assert.equal(response.status(),200);
    await page.waitForSelector('#latestBalls .ball');
    const state=await page.evaluate(()=>({text:document.querySelector('#nextDrawSchedule').textContent,overflow:document.documentElement.scrollWidth>innerWidth,version:document.querySelector('script[src*=schedule]').getAttribute('src')}));
-   assert.match(state.text,/^下期开奖时间：(?:待官方公布|\d{4}年\d{1,2}月\d{1,2}日 (?:\d{1,2}点\d{2}分|时间待官方公布)，星期[一二三四五六日])$/);
-   assert.equal(state.overflow,false);assert.match(state.version,/3\.3\.1/);
+   assert.match(state.text,/^下期开奖时间：(?:待官方公布|\d{4}年\d{1,2}月\d{1,2}日 21点30分，星期[一二三四五六日])$/);
+   assert.equal(state.overflow,false);assert.match(state.version,/3\.3\.2/);
    console.log(JSON.stringify({width,...state}));
    await page.screenshot({path:'../schedule-verified-'+width+'.png'});
   }
@@ -21,7 +21,7 @@ const assert=require('node:assert/strict');
   assert.deepEqual(h.nextDraw,s.nextDraw);assert.equal(h.nextDraw.basedOnIssue,h.draws[0].issue);
   await page.evaluate(async()=>{await navigator.serviceWorker.ready});
   await page.reload();await page.waitForSelector('#latestBalls .ball');
-  assert.ok((await page.evaluate(()=>caches.keys())).includes('marksix-analyzer-v3.3.1'));
+  assert.ok((await page.evaluate(()=>caches.keys())).includes('marksix-analyzer-v3.3.2'));
   assert.deepEqual(errors,[]);console.log('Published data pairing, new service worker cache and browser errors PASS');
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});

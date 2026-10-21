@@ -22,9 +22,8 @@
   const [year,month,day]=next.date.split('-').map(Number);
   // Recompute the weekday in Hong Kong instead of trusting a cached label.
   const weekday=new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Hong_Kong',weekday:'long'}).format(new Date(next.date+'T12:00:00+08:00'));
-  const confirmed=next.status==='confirmed'&&/^([01]\d|2[0-3]):[0-5]\d$/.test(next.time||'');
-  const time=confirmed?Number(next.time.slice(0,2))+'点'+next.time.slice(3)+'分':'时间待官方公布';
-  if(confirmed&&Date.parse(next.date+'T'+next.time+':00+08:00')<=now.getTime())return pendingText;
+  // Fixed display time requested by the site owner; the date still comes from HKJC.
+  const time='21点30分';
   return '下期开奖时间：'+year+'年'+month+'月'+day+'日 '+time+'，'+weekday;
  }
  const api={parse,pending,text};if(typeof module==='object')module.exports=api;else root.MarkSixSchedule=api;
