@@ -1,8 +1,21 @@
 {
   "source": "香港赛马会",
   "sourceUrl": "https://bet.hkjc.com/ch/marksix/results",
-  "checkedAt": "2026-10-27T10:42:13.145Z",
+  "checkedAt": "2026-10-27T16:03:53.020Z",
   "draws": [
+    {
+      "issue": "26/115",
+      "date": "2026-10-27",
+      "main": [
+        2,
+        4,
+        18,
+        21,
+        24,
+        47
+      ],
+      "special": 31
+    },
     {
       "issue": "26/114",
       "date": "2026-10-24",
@@ -57231,15 +57244,15 @@
     }
   ],
   "nextDraw": {
-    "basedOnIssue": "26/114",
-    "issue": "26/115",
-    "date": "2026-10-27",
-    "weekday": "星期二",
+    "basedOnIssue": "26/115",
+    "issue": "26/116",
+    "date": "2026-10-31",
+    "weekday": "星期六",
     "time": null,
     "timeZone": "Asia/Hong_Kong",
     "status": "date_confirmed",
     "source": "香港赛马会",
     "sourceUrl": "https://bet.hkjc.com/ch/marksix",
-    "checkedAt": "2026-10-27T10:42:13.341Z"
+    "checkedAt": "2026-10-27T16:03:53.232Z"
   }
 }
