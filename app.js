@@ -40,9 +40,9 @@ function specialStats(draws){
   const main20=draws.slice(-20).filter(d=>d.main.includes(num)).length;
   const zodiacName=Object.keys(Z).find(z=>Z[z].includes(num)),zRank=zodiacRanks.findIndex(z=>z.name===zodiacName);
   const parts={
-   recent:Math.min(30,recent5*12+recent10*6+recent20*2),
+   recent:Math.min(15,recent5*4+recent10*3+recent20*1),
    gap:count?Math.min(10,(gap||0)*.3):0,
-   cycle:cycleFit*18,
+   cycle:cycleFit*12,
    frequency:Math.min(12,count*3),
    main:Math.min(10,main20*1.5),
    zodiac:Math.max(0,7-zRank*.55)
@@ -51,6 +51,18 @@ function specialStats(draws){
   return{n:num,count,gap,recent5,recent10,recent20,avgGap,cycleFit,main20,zodiacName,parts,score}
  });
  return raw.sort((a,b)=>b.score-a.score||((b.gap||0)-(a.gap||0))||a.n-b.n)
+}
+function specialValidationLast20(draws){
+ const sorted=[...draws].sort((a,b)=>a.issue.localeCompare(b.issue));
+ const rows=[];
+ for(let i=20;i<sorted.length;i++){
+  const pool=specialStats(sorted.slice(0,i)).slice(0,10).map(x=>x.n);
+  const actual=sorted[i].special;
+  rows.push({issue:sorted[i].issue,actual,rank:pool.indexOf(actual)+1});
+ }
+ const recent=rows.slice(-20);
+ const hits=k=>recent.filter(x=>x.rank>0&&x.rank<=k).length;
+ return{total:recent.length,top1:hits(1),top3:hits(3),top6:hits(6),top10:hits(10)};
 }
 function specialWalkForwardBacktest(draws,minTrain=20){
  const rows=[],ks=[1,3,6,10];
@@ -86,6 +98,20 @@ function walkForwardBacktest(history,minTrain=15){
 async function loadHistory(){const r=await fetch('./data/history.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('history');return r.json()}
 function renderLatest(){setText('#nextDrawSchedule',MarkSixSchedule.text(snapshot.nextDraw,snapshot.latest));setText('#sampleCount',snapshot.sampleCount);setText('#hotNumber',String(snapshot.hotNumber).padStart(2,'0'));setText('#hotZodiac',snapshot.hotZodiac);setText('#latestMeta',`${snapshot.latest.date} · ${snapshot.latest.issue}`);const w=document.querySelector('#latestBalls');w.innerHTML='';const withZodiac=(n,s=false)=>{const cell=document.createElement('div');cell.className='draw-number';cell.appendChild(ball(n,s));const label=document.createElement('small');label.className='draw-zodiac';label.textContent=zodiacOf(n);cell.appendChild(label);return cell};snapshot.latest.main.forEach(n=>w.appendChild(withZodiac(n)));const sp=document.querySelector('#specialBall');sp.innerHTML='';sp.appendChild(withZodiac(snapshot.latest.special,true))}
 function renderRankings(){const nr=document.querySelector('#numberRanking');nr.innerHTML='';snapshot.numberRanking.forEach((x,i)=>nr.insertAdjacentHTML('beforeend',`<div class="rank-row"><div class="rank-no">${i+1}</div><div class="rank-main"><b>${String(x.n).padStart(2,'0')} · ${x.label}</b><small>${x.note}</small></div><div class="rank-value">${x.score}</div></div>`));const zr=document.querySelector('#zodiacRanking');zr.innerHTML='';snapshot.zodiacRanking.forEach((x,i)=>zr.insertAdjacentHTML('beforeend',`<div class="rank-row"><div class="rank-no">${i+1}</div><div class="rank-main"><b>${x.name} · ${x.nums}</b><small>${x.note}</small></div><div class="rank-value">${x.trend}</div></div>`));const sp=document.querySelector('#specialPool');sp.innerHTML='';snapshot.specialPool.forEach(n=>sp.insertAdjacentHTML('beforeend',`<span class="chip">${String(n).padStart(2,'0')}</span>`));let sr=document.querySelector('#specialRanking');if(sr){sr.innerHTML='';(snapshot.specialRanking||[]).forEach((x,i)=>sr.insertAdjacentHTML('beforeend',`<div class="rank-row"><div class="rank-no">${i+1}</div><div class="rank-main"><b>${String(x.n).padStart(2,'0')}</b><small>近5/10/20期 ${x.recent5}/${x.recent10}/${x.recent20} · 遗漏 ${x.gap==null?'未开过':x.gap+'期'} · 平均间隔 ${x.avgGap.toFixed(1)} · ${x.zodiacName||''}</small></div><div class="rank-value" title="近期 ${x.parts?.recent?.toFixed(1)||'-'} / 遗漏 ${x.parts?.gap?.toFixed(1)||'-'} / 周期 ${x.parts?.cycle?.toFixed(1)||'-'} / 历史频率 ${x.parts?.frequency?.toFixed(1)||'-'} / 正选活跃 ${x.parts?.main?.toFixed(1)||'-'} / 生肖辅助 ${x.parts?.zodiac?.toFixed(1)||'-'}">预测分 ${x.score.toFixed(1)}</div></div>`))}}
+function renderSpecialAudit(){
+ if(!historyCache?.draws)return;
+ const d=historyCache.draws.filter(x=>x.issue>='26/047'&&x.issue<='26/999');
+ const v=specialValidationLast20(d);
+ let e=document.querySelector('#specialAudit');
+ if(!e){e=document.createElement('div');e.id='specialAudit';e.className='card explanation';document.querySelector('#specialRanking')?.after(e)}
+ if(!e)return;
+ const pct=n=>v.total?(100*n/v.total).toFixed(1)+'%':'—';
+ e.innerHTML='<h3>特别号 · 最近20期历史样本外验证（新版权重）</h3>'+ 
+ '<p>每期只使用该期开奖前的历史记录重建排名；不使用当期特别号参与预测。历史记录为事后重建，不等于当时已锁定的预测快照。</p>'+ 
+ '<p>Top 1：'+v.top1+'/'+v.total+'（'+pct(v.top1)+'，随机基准2.0%） · Top 3：'+v.top3+'/'+v.total+'（'+pct(v.top3)+'，随机基准6.1%）</p>'+ 
+ '<p>Top 6：'+v.top6+'/'+v.total+'（'+pct(v.top6)+'，随机基准12.2%） · Top 10：'+v.top10+'/'+v.total+'（'+pct(v.top10)+'，随机基准20.4%）</p>'+ 
+ '<p class="fineprint">当前观察池为下一期重新计算的排名，不得作为上一期的开奖前排名。新权重需要积累真实开奖前快照再做前瞻验收。</p>';
+}
 function renderSpecialValidation(){
  const bt=snapshot.specialBacktest;if(!bt)return;
  let card=document.querySelector('#specialValidation');
