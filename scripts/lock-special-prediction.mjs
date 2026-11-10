@@ -10,3 +10,38 @@ const z=Object.entries(Z).map(([name,nums])=>{const sample=draws.slice(-20),n=sa
 const scores=Array.from({length:49},(_,i)=>{const n=i+1,idx=[];draws.forEach((d,j)=>{if(d.special===n)idx.push(j)});const count=idx.length,gap=count?draws.length-1-idx.at(-1):null,recent5=draws.slice(-5).filter(d=>d.special===n).length,recent10=draws.slice(-10).filter(d=>d.special===n).length,recent20=draws.slice(-20).filter(d=>d.special===n).length,intervals=idx.slice(1).map((v,k)=>v-idx[k]),avgGap=intervals.length?intervals.reduce((a,b)=>a+b,0)/intervals.length:49,cycleFit=Math.max(0,1-Math.abs(gap-avgGap)/Math.max(avgGap,1)),main20=draws.slice(-20).filter(d=>d.main.includes(n)).length,zodiac=Object.keys(Z).find(k=>Z[k].includes(n)),zRank=z.findIndex(x=>x.name===zodiac);const score=Math.min(15,recent5*4+recent10*3+recent20)+ (count?Math.min(10,(gap||0)*.3):0)+cycleFit*12+Math.min(12,count*3)+Math.min(10,main20*1.5)+Math.max(0,7-zRank*.55);return{number:n,score:Number(score.toFixed(3)),gap}}).sort((a,b)=>b.score-a.score||((b.gap||0)-(a.gap||0))||a.number-b.number);
 await mkdir('data/predictions',{recursive:true});
 try{await readFile(file,'utf8');console.log('PREDICTION_ALREADY_LOCKED',file)}catch(e){if(e.code!=='ENOENT')throw e;await writeFile(file,JSON.stringify({model:'special-v2',targetIssue:next,sourceThroughIssue:latest.issue,generatedAt:new Date().toISOString(),top10:scores.slice(0,10).map((x,i)=>({rank:i+1,number:x.number,score:x.score})),status:'locked-before-result'},null,2)+'\n');console.log('PREDICTION_LOCKED',file)}
+
+// Publish a read-only dashboard view from immutable per-issue prediction files.
+// Past predictions are never regenerated and missing archives are never backfilled.
+const {readdir}=await import('node:fs/promises');
+const entries=(await readdir('data/predictions')).filter(n=>/^special-\d{2}-\d{3}\.json$/.test(n));
+const byIssue=new Map(history.draws.map(d=>[d.issue,d]));
+const records=[];
+for(const name of entries){
+  const item=JSON.parse(await readFile('data/predictions/'+name,'utf8'));
+  if(!/^\d{2}\/\d{3}$/.test(item.targetIssue)||!Array.isArray(item.top10)||item.top10.length!==10)continue;
+  if(new Set(item.top10.map(x=>x.number)).size!==10||item.top10.some(x=>!Number.isInteger(x.number)||x.number<1||x.number>49))continue;
+  const actual=byIssue.get(item.targetIssue);
+  records.push({
+    targetIssue:item.targetIssue,sourceThroughIssue:item.sourceThroughIssue,
+    generatedAt:item.generatedAt,model:item.model,
+    top10:item.top10,actualSpecial:actual?.special??null,
+    hitRank:actual?item.top10.findIndex(x=>x.number===actual.special)+1||null:null
+  });
+}
+records.sort((a,b)=>b.targetIssue.localeCompare(a.targetIssue));
+const valid=records.filter(x=>x.actualSpecial!==null);
+const recent=valid.slice(0,20);
+const coverage={};
+for(const k of [1,3,6,10]){
+ const hits=recent.filter(x=>x.hitRank!==null&&x.hitRank<=k).length;
+ coverage[k]={hits,total:recent.length,rate:recent.length?Math.round(hits/recent.length*10000)/100:null};
+}
+const current=records.find(x=>x.targetIssue===next&&x.actualSpecial===null)||null;
+await writeFile('data/predictions/summary.json',JSON.stringify({
+ generatedAt:new Date().toISOString(),latestResultIssue:latest.issue,
+ current,previous:valid[0]||null,recent20:coverage,
+ verifiedHistory:valid.slice(0,20),archivedCount:records.length,
+ note:'仅纳入已留档的逐期预测；无预测档案的历史期数不补造记录。'
+},null,2)+'\n');
+console.log('PREDICTION_SUMMARY',current?.targetIssue||'missing',valid.length);
