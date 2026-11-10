@@ -143,11 +143,15 @@ function renderTrafficHub(h){
  const latest=draws.at(-1),traffic=document.querySelector('#trafficHub'),nums=document.querySelector('#numberHub'),zods=document.querySelector('#zodiacHub');
  if(!traffic||!nums||!zods||!latest)return;
  traffic.innerHTML=[
-  ['最新开奖记录',latest.issue+' · '+latest.date,'./draw/'+latest.issue.replace('/','-')+'/'],
   ['第五代号码热榜','按正选累计频率查看','./machine/compare/'],
   ['生肖数据排行','累计命中率与最近10期','./zodiac/'+({马:'horse',蛇:'snake',龙:'dragon',兔:'rabbit',虎:'tiger',牛:'ox',鼠:'mouse',猪:'pig',狗:'dog',鸡:'rooster',猴:'monkey',羊:'goat'}[snapshot.hotZodiac])+'/'],
   ['特别号数据库','特别号独立统计','./special/']
  ].map(x=>'<a class="traffic-link" href="'+x[2]+'"><b>'+x[0]+'</b><small>'+x[1]+'</small></a>').join('');
+ const recentDraws=draws.slice(-20).reverse();
+ const two=n=>String(n).padStart(2,'0');
+ const recentHtml=recentDraws.map(d=>'<a class="recent-draw-item" href="./draw/'+encodeURIComponent(d.issue.replace('/','-'))+'/"><span class="recent-draw-meta"><b>第'+d.issue+'期</b><time>'+d.date+'</time></span><span class="recent-draw-balls">'+d.main.map(n=>'<span>'+two(n)+'</span>').join('')+'<strong title="特别号">'+two(d.special)+'</strong></span></a>').join('');
+ const recentBlock='<details class="recent-draws-panel"><summary>最近20期开奖记录 <small>当前 '+recentDraws.length+' 期 · 点击查看号码</small></summary><div class="recent-draw-list">'+recentHtml+'</div></details>';
+ traffic.insertAdjacentHTML('afterbegin',recentBlock);
  const counts=Object.fromEntries(Array.from({length:49},(_,i)=>[i+1,0]));draws.forEach(d=>d.main.forEach(n=>counts[n]++));
  nums.innerHTML=Array.from({length:49},(_,i)=>{const n=i+1;return '<a class="hub-num" href="./number/'+String(n).padStart(2,'0')+'/">'+String(n).padStart(2,'0')+'<small>'+counts[n]+'次</small></button>'}).join('');
  const slugs={马:"horse",蛇:"snake",龙:"dragon",兔:"rabbit",虎:"tiger",牛:"ox",鼠:"mouse",猪:"pig",狗:"dog",鸡:"rooster",猴:"monkey",羊:"goat"};const zs=zodiacStats(draws);zods.innerHTML=zs.map(x=>'<a class="hub-zodiac" href="./zodiac/'+slugs[x.name]+'/">'+x.name+'<small>'+x.hitRate.toFixed(1)+'%</small></button>').join('');
