@@ -47,7 +47,7 @@
   if(numbers)fold(numbers,'49个号码数据库 · 点击展开','fold-number-directory',numbers.previousElementSibling?.classList.contains('section-head')?numbers.previousElementSibling:null);
   if(zodiac)fold(zodiac,'12生肖数据库 · 点击展开','fold-zodiac-directory',zodiac.previousElementSibling?.classList.contains('section-head')?zodiac.previousElementSibling:null);
   const machine=document.getElementById('machine');
-  const note=machine?.querySelector('.page-title + .explanation');
+  const note=machine?.querySelector('.explanation:not(#backtestCard):not(#modelSummary):not(#historyPanel)');
   if(note)fold(note,'换机对比说明','fold-machine-explanation');
   for(const [id,title] of [['modelSummary','模型评分与验证说明'],['specialValidation','特别号历史滚动回测']]){
    const el=document.getElementById(id);if(el)fold(el,title,'fold-'+id);
