@@ -25,6 +25,7 @@ on:
       - 'data-service.js'
       - 'scripts/test-update.mjs'
       - 'scripts/lock-special-prediction.mjs'
+      - 'special-prediction.js'
       - 'scripts/update-next-draw.mjs'
       - 'scripts/test-schedule.mjs'
       - 'schedule.js'
