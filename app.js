@@ -112,17 +112,63 @@ function renderBacktest(h){
 }
 function renderHistory(h){let p=document.querySelector('#historyPanel');if(!p){p=document.createElement('details');p.id='historyPanel';p.className='card explanation';document.querySelector('#machine').append(p)}p.innerHTML='<summary>历史开奖记录</summary>';const years=[...new Set(h.draws.map(d=>d.date.slice(0,4)))];const label=document.createElement('label');label.textContent='选择年份： ';const sel=document.createElement('select');years.forEach(y=>{const o=document.createElement('option');o.value=y;o.textContent=y+'年';sel.append(o)});label.append(sel);p.append(label);const rows=document.createElement('div');p.append(rows);function draw(){rows.innerHTML='';const ds=h.draws.filter(d=>d.date.startsWith(sel.value));const c=document.createElement('p');c.className='fineprint';c.textContent=`共 ${ds.length} 期 · 由新到旧`;rows.append(c);ds.forEach(d=>{const r=document.createElement('p');r.textContent=`${d.date} · ${d.issue}：${d.main.map(n=>String(n).padStart(2,'0')).join(' ')} ｜ 特别号 ${String(d.special).padStart(2,'0')}`;rows.append(r)})}sel.addEventListener('change',draw);draw()}
 let pickMode='random';
+let pickRollingTimer=null;
 function sampleUnique(pool,count,weights=null){const items=[...pool],out=[];for(let k=0;k<count;k++){let idx;if(weights){const w=items.map(n=>weights[n]||1),sum=w.reduce((a,b)=>a+b,0);let r=Math.random()*sum;idx=0;for(;idx<w.length;idx++){r-=w[idx];if(r<=0)break}if(idx>=items.length)idx=items.length-1}else idx=Math.floor(Math.random()*items.length);out.push(items[idx]);items.splice(idx,1)}return out.sort((a,b)=>a-b)}
-function generatePick(){const pool=Array.from({length:49},(_,i)=>i+1),weights={};(snapshot?.numberRanking||[]).forEach((x,i)=>weights[x.n]=Math.max(1.2,3.6-i*.3));const main=sampleUnique(pool,6,pickMode==='weighted'?weights:null),remain=pool.filter(n=>!main.includes(n)),special=sampleUnique(remain,1,pickMode==='weighted'?weights:null)[0],w=document.querySelector('#pickResult');w.innerHTML='';main.forEach(n=>w.appendChild(numberWithZodiac(n)));const plus=document.createElement('span');plus.textContent='+';w.appendChild(plus);w.appendChild(numberWithZodiac(special,true))}
-function showPage(id){if(!document.getElementById(id)?.classList.contains("page"))return;document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.target===id));window.scrollTo({top:0,behavior:'smooth'})}
-function bindUI(){document.addEventListener('click',e=>{const nav=e.target.closest('[data-target]');if(nav)showPage(nav.dataset.target);if(e.target.closest('.back'))showPage('home')});document.querySelectorAll('.seg').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.seg').forEach(x=>x.classList.remove('active'));b.classList.add('active');pickMode=b.dataset.mode;generatePick()}));document.querySelector('#pickBtn').addEventListener('click',generatePick);document.querySelector('#themeBtn').addEventListener('click',()=>document.body.classList.toggle('dark'))}
+function generatePick(){
+ const pool=Array.from({length:49},(_,i)=>i+1),weights={};
+ (snapshot?.numberRanking||[]).forEach((x,i)=>weights[x.n]=Math.max(1.2,3.6-i*.3));
+ const main=sampleUnique(pool,6,pickMode==='weighted'?weights:null),remain=pool.filter(n=>!main.includes(n));
+ const special=sampleUnique(remain,1,pickMode==='weighted'?weights:null)[0];
+ const w=document.querySelector('#pickResult');
+ if(!w)return;
+ w.replaceChildren();
+ main.forEach(n=>w.appendChild(numberWithZodiac(n)));
+ const plus=document.createElement('span');plus.textContent='+';w.appendChild(plus);
+ w.appendChild(numberWithZodiac(special,true));
+}
+function updatePickControls(rolling,message){
+ const start=document.querySelector('#pickStartBtn'),stop=document.querySelector('#pickStopBtn');
+ if(start)start.disabled=rolling;
+ if(stop)stop.disabled=!rolling;
+ const result=document.querySelector('#pickResult'),status=document.querySelector('#pickStatus');
+ if(result){result.classList.toggle('is-rolling',rolling);result.setAttribute('aria-busy',String(rolling))}
+ if(status)status.textContent=message;
+}
+function stopPickRoll(finalize=true){
+ if(pickRollingTimer!==null){clearInterval(pickRollingTimer);pickRollingTimer=null}
+ if(finalize)generatePick();
+ updatePickControls(false,finalize?'已停止：显示最终的6个正选号码和1个特别号。':'已停止滚动。');
+}
+function startPickRoll(){
+ if(pickRollingTimer!==null)return;
+ generatePick();
+ updatePickControls(true,'号码正在滚动，点击「结束」停止。');
+ pickRollingTimer=setInterval(()=>{
+  if(document.hidden||!document.getElementById('home')?.classList.contains('active')){stopPickRoll(false);return}
+  generatePick();
+ },110);
+}
+function showPage(id){if(!document.getElementById(id)?.classList.contains("page"))return;if(id!=='home'&&pickRollingTimer!==null)stopPickRoll(false);document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.target===id));window.scrollTo({top:0,behavior:'smooth'})}
+function bindUI(){
+ document.addEventListener('click',e=>{const nav=e.target.closest('[data-target]');if(nav)showPage(nav.dataset.target);if(e.target.closest('.back'))showPage('home')});
+ document.querySelectorAll('.seg').forEach(b=>b.addEventListener('click',()=>{
+  if(pickRollingTimer!==null)stopPickRoll(false);
+  document.querySelectorAll('.seg').forEach(x=>x.classList.remove('active'));b.classList.add('active');
+  pickMode=b.dataset.mode;generatePick();
+  updatePickControls(false,'已切换模式，点击「开始」滚动号码。');
+ }));
+ document.querySelector('#pickStartBtn')?.addEventListener('click',startPickRoll);
+ document.querySelector('#pickStopBtn')?.addEventListener('click',()=>stopPickRoll(true));
+ document.querySelector('#themeBtn').addEventListener('click',()=>document.body.classList.toggle('dark'));
+ document.addEventListener('visibilitychange',()=>{if(document.hidden&&pickRollingTimer!==null)stopPickRoll(false)});
+}
 function renderModelSummary(h){const bt=walkForwardBacktest(h),top=snapshot.zodiacRanking?.[0];let e=document.querySelector('#modelSummary');if(!e){e=document.createElement('div');e.id='modelSummary';e.className='card explanation';document.querySelector('#machine').append(e)}const valid=bt.total>=20&&bt.roiPct>0&&bt.lastRoi>0;e.innerHTML=`<h3>模型 v2.0 · 固定规则</h3><p><b>当前单肖第一：</b>${top?.name||'—'}　<b>模型状态：</b>${valid?'样本外暂为正':'暂无稳定样本外优势'}</p><p class="fineprint">最近${bt.last20}期：${bt.lastWins}/${bt.last20}命中 · ROI ${bt.lastRoi>=0?'+':''}${bt.lastRoi.toFixed(1)}% ｜ 累计ROI ${bt.roiPct>=0?'+':''}${bt.roiPct.toFixed(1)}%</p><p class="fineprint">26/099：临时备用机事件，仅标记观察，不参与人工加权。</p>`}
 function renderStatus(){let s=document.querySelector('#updateStatus');if(!s){s=document.createElement('p');s.id='updateStatus';s.className='notice';document.querySelector('.latest-card').after(s)}s.textContent=`开奖来源：香港赛马会 · 第五代样本 ${snapshot.sampleCount} 期 · 已自动重算号码/生肖/ROI/滚动回测。`}
 async function refreshResults(){try{
  const loaded=await loadHistory();if(historyCache?.draws){const merged=new Map(loaded.draws.map(d=>[d.issue,d]));historyCache.draws.forEach(d=>{if(!merged.has(d.issue))merged.set(d.issue,d)});loaded.draws=[...merged.values()].sort((a,b)=>b.date.localeCompare(a.date)||b.issue.localeCompare(a.issue));}historyCache=loaded;
  snapshot=recalc(historyCache);
  if(!snapshot)throw Error('无可用历史数据');
- renderLatest();renderRankings();renderSpecialValidation();renderBacktest(historyCache);renderModelSummary(historyCache);renderTrafficHub(historyCache);generatePick();renderStatus();document.querySelector("#loadError")?.remove()
+ renderLatest();renderRankings();renderSpecialValidation();renderBacktest(historyCache);renderModelSummary(historyCache);renderTrafficHub(historyCache);if(pickRollingTimer===null)generatePick();renderStatus();document.querySelector("#loadError")?.remove()
 }catch(e){
  console.error(e);
  let box=document.querySelector('#loadError');
