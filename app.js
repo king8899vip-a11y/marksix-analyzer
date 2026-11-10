@@ -40,9 +40,9 @@ function specialStats(draws){
   const main20=draws.slice(-20).filter(d=>d.main.includes(num)).length;
   const zodiacName=Object.keys(Z).find(z=>Z[z].includes(num)),zRank=zodiacRanks.findIndex(z=>z.name===zodiacName);
   const parts={
-   recent:Math.min(15,recent5*4+recent10*3+recent20*1),
+   recent:Math.min(30,recent5*12+recent10*6+recent20*2),
    gap:count?Math.min(10,(gap||0)*.3):0,
-   cycle:cycleFit*12,
+   cycle:cycleFit*18,
    frequency:Math.min(12,count*3),
    main:Math.min(10,main20*1.5),
    zodiac:Math.max(0,7-zRank*.55)
@@ -51,18 +51,6 @@ function specialStats(draws){
   return{n:num,count,gap,recent5,recent10,recent20,avgGap,cycleFit,main20,zodiacName,parts,score}
  });
  return raw.sort((a,b)=>b.score-a.score||((b.gap||0)-(a.gap||0))||a.n-b.n)
-}
-function specialValidationLast20(draws){
- const sorted=[...draws].sort((a,b)=>a.issue.localeCompare(b.issue));
- const rows=[];
- for(let i=20;i<sorted.length;i++){
-  const pool=specialStats(sorted.slice(0,i)).slice(0,10).map(x=>x.n);
-  const actual=sorted[i].special;
-  rows.push({issue:sorted[i].issue,actual,rank:pool.indexOf(actual)+1});
- }
- const recent=rows.slice(-20);
- const hits=k=>recent.filter(x=>x.rank>0&&x.rank<=k).length;
- return{total:recent.length,top1:hits(1),top3:hits(3),top6:hits(6),top10:hits(10)};
 }
 function specialWalkForwardBacktest(draws,minTrain=20){
  const rows=[],ks=[1,3,6,10];
@@ -98,48 +86,6 @@ function walkForwardBacktest(history,minTrain=15){
 async function loadHistory(){const r=await fetch('./data/history.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('history');return r.json()}
 function renderLatest(){setText('#nextDrawSchedule',MarkSixSchedule.text(snapshot.nextDraw,snapshot.latest));setText('#sampleCount',snapshot.sampleCount);setText('#hotNumber',String(snapshot.hotNumber).padStart(2,'0'));setText('#hotZodiac',snapshot.hotZodiac);setText('#latestMeta',`${snapshot.latest.date} · ${snapshot.latest.issue}`);const w=document.querySelector('#latestBalls');w.innerHTML='';const withZodiac=(n,s=false)=>{const cell=document.createElement('div');cell.className='draw-number';cell.appendChild(ball(n,s));const label=document.createElement('small');label.className='draw-zodiac';label.textContent=zodiacOf(n);cell.appendChild(label);return cell};snapshot.latest.main.forEach(n=>w.appendChild(withZodiac(n)));const sp=document.querySelector('#specialBall');sp.innerHTML='';sp.appendChild(withZodiac(snapshot.latest.special,true))}
 function renderRankings(){const nr=document.querySelector('#numberRanking');nr.innerHTML='';snapshot.numberRanking.forEach((x,i)=>nr.insertAdjacentHTML('beforeend',`<div class="rank-row"><div class="rank-no">${i+1}</div><div class="rank-main"><b>${String(x.n).padStart(2,'0')} · ${x.label}</b><small>${x.note}</small></div><div class="rank-value">${x.score}</div></div>`));const zr=document.querySelector('#zodiacRanking');zr.innerHTML='';snapshot.zodiacRanking.forEach((x,i)=>zr.insertAdjacentHTML('beforeend',`<div class="rank-row"><div class="rank-no">${i+1}</div><div class="rank-main"><b>${x.name} · ${x.nums}</b><small>${x.note}</small></div><div class="rank-value">${x.trend}</div></div>`));const sp=document.querySelector('#specialPool');sp.innerHTML='';snapshot.specialPool.forEach(n=>sp.insertAdjacentHTML('beforeend',`<span class="chip">${String(n).padStart(2,'0')}</span>`));let sr=document.querySelector('#specialRanking');if(sr){sr.innerHTML='';(snapshot.specialRanking||[]).forEach((x,i)=>sr.insertAdjacentHTML('beforeend',`<div class="rank-row"><div class="rank-no">${i+1}</div><div class="rank-main"><b>${String(x.n).padStart(2,'0')}</b><small>近5/10/20期 ${x.recent5}/${x.recent10}/${x.recent20} · 遗漏 ${x.gap==null?'未开过':x.gap+'期'} · 平均间隔 ${x.avgGap.toFixed(1)} · ${x.zodiacName||''}</small></div><div class="rank-value" title="近期 ${x.parts?.recent?.toFixed(1)||'-'} / 遗漏 ${x.parts?.gap?.toFixed(1)||'-'} / 周期 ${x.parts?.cycle?.toFixed(1)||'-'} / 历史频率 ${x.parts?.frequency?.toFixed(1)||'-'} / 正选活跃 ${x.parts?.main?.toFixed(1)||'-'} / 生肖辅助 ${x.parts?.zodiac?.toFixed(1)||'-'}">预测分 ${x.score.toFixed(1)}</div></div>`))}}
-async async async function renderLockedSpecialPrediction(){
- const latest=historyCache?.draws?.filter(x=>x.issue>='26/047').sort((a,b)=>a.issue.localeCompare(b.issue)).at(-1);
- if(!latest)return;
- const [year,num]=latest.issue.split('/');
- const target=year+'/'+String(Number(num)+1).padStart(3,'0');
- let e=document.querySelector('#lockedSpecialPrediction');
- if(!e){e=document.createElement('div');e.id='lockedSpecialPrediction';e.className='card explanation special-locked';document.querySelector('#lockedSpecialHost')?.append(e)}
- if(!e)return;
- e.innerHTML='<h3>第 '+target+' 期 · 已锁定号码</h3><p>正在读取预测记录…</p>';
- try{
-  const path='./data/predictions/special-'+target.replace('/','-')+'.json?t='+Date.now();
-  const res=await fetch(path,{cache:'no-store'});
-  if(!res.ok)throw Error('snapshot unavailable');
-  const data=await res.json();
-  if(data.targetIssue!==target||data.sourceThroughIssue!==latest.issue||!Array.isArray(data.top10)||data.top10.length!==10)throw Error('snapshot mismatch');
-  const nums=data.top10.map(x=>Number(x.number));
-  if(new Set(nums).size!==10||nums.some(x=>!Number.isInteger(x)||x<1||x>49))throw Error('invalid numbers');
-  const time=new Date(data.generatedAt);
-  const lockedAt=Number.isNaN(time.getTime())?'时间未提供':new Intl.DateTimeFormat('zh-HK',{timeZone:'Asia/Hong_Kong',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(time)+'（香港时间）';
-  e.innerHTML='<div class="special-eyebrow">下一期 · '+target+'</div><h3>开奖前锁定 Top 10</h3>'+ 
-   '<div class="special-number-grid">'+nums.map((n,i)=>'<div class="special-number"><small>'+(i+1)+'</small><b>'+String(n).padStart(2,'0')+'</b></div>').join('')+'</div>'+ 
-   '<p class="special-meta">锁定：'+lockedAt+' · 数据截至 '+data.sourceThroughIssue+' 期</p>'+ 
-   '<p class="fineprint">以下号码为已保存快照，并非开奖后重新排序。</p>';
-
- }catch{
-  e.innerHTML='<h3>第 '+target+' 期 · 锁定预测暂不可用</h3><p>尚无可核对的锁定记录；下方实时号码不能视为开奖前预测。</p>';
- }
-}
-function renderSpecialAudit(){
- if(!historyCache?.draws)return;
- const d=historyCache.draws.filter(x=>x.issue>='26/047'&&x.issue<='26/999');
- const v=specialValidationLast20(d);
- let e=document.querySelector('#specialAudit');
- if(!e){e=document.createElement('div');e.id='specialAudit';e.className='card explanation';document.querySelector('#specialValidationHost')?.append(e)}
- if(!e)return;
- const pct=n=>v.total?(100*n/v.total).toFixed(1)+'%':'—';
- e.innerHTML='<h3>特别号 · 最近20期历史样本外验证（新版权重）</h3>'+ 
- '<p>每期只使用该期开奖前的历史记录重建排名；不使用当期特别号参与预测。历史记录为事后重建，不等于当时已锁定的预测快照。</p>'+ 
- '<p>Top 1：'+v.top1+'/'+v.total+'（'+pct(v.top1)+'，随机基准2.0%） · Top 3：'+v.top3+'/'+v.total+'（'+pct(v.top3)+'，随机基准6.1%）</p>'+ 
- '<p>Top 6：'+v.top6+'/'+v.total+'（'+pct(v.top6)+'，随机基准12.2%） · Top 10：'+v.top10+'/'+v.total+'（'+pct(v.top10)+'，随机基准20.4%）</p>'+ 
- '<p class="fineprint">当前观察池为下一期重新计算的排名，不得作为上一期的开奖前排名。新权重需要积累真实开奖前快照再做前瞻验收。</p>';
-}
 function renderSpecialValidation(){
  const bt=snapshot.specialBacktest;if(!bt)return;
  let card=document.querySelector('#specialValidation');
@@ -164,21 +110,7 @@ function renderBacktest(h){
  <p><b>最近${bt.last20}期：</b>${bt.lastWins}/${bt.last20} 命中（${bt.lastHitRate.toFixed(1)}%），ROI ${bt.lastRoi>=0?'+':''}${bt.lastRoi.toFixed(1)}%。</p>
  <p class="notice">${edge?'回测目前为正，但仍不足以证明下一期有可重复优势。':'目前没有稳定样本外优势，不应把历史第一名当成高概率预测。'}</p>`;
 }
-function renderHistory(h){
- if(document.querySelector('#historyPanel')?.dataset.latestIssue===h.draws[0]?.issue)return;
- let p=document.querySelector('#historyPanel');
- if(!p){p=document.createElement('section');p.id='historyPanel';p.className='history-home';document.querySelector('#historyHomeHost')?.append(p)}
- if(!p)return;
- p.dataset.latestIssue=h.draws[0]?.issue||'';
- const all=[...h.draws].sort((a,b)=>b.date.localeCompare(a.date)||b.issue.localeCompare(a.issue));
- const years=[...new Set(all.map(d=>d.date.slice(0,4)))];
- p.innerHTML='<div class="section-head"><h2>往期开奖结果</h2><a href="./draw/">查看完整记录</a></div><div class="history-controls"><label for="historyYear">年份</label><select id="historyYear"><option value="recent">最近20期</option>'+years.map(y=>'<option value="'+y+'">'+y+'年</option>').join('')+'</select></div><div class="history-rows" id="historyRows"></div><button class="history-more" id="historyMore" type="button">查看更多</button>';
- const sel=p.querySelector('#historyYear'),rows=p.querySelector('#historyRows'),more=p.querySelector('#historyMore');
- let shown=20;
- function draw(){const list=sel.value==='recent'?all.slice(0,20):all.filter(d=>d.date.startsWith(sel.value));const ds=list.slice(0,shown);rows.innerHTML='';ds.forEach(d=>{const item=document.createElement('div');item.className='history-item';const heading=document.createElement('div');heading.className='history-item-heading';heading.textContent=d.issue+'期 · '+d.date;item.append(heading);const balls=document.createElement('div');balls.className='history-balls';d.main.forEach(n=>{const x=document.createElement('span');x.className='history-ball';x.textContent=String(n).padStart(2,'0');balls.append(x)});const plus=document.createElement('span');plus.textContent='+';balls.append(plus);const sp=document.createElement('span');sp.className='history-ball history-special';sp.textContent=String(d.special).padStart(2,'0');balls.append(sp);item.append(balls);rows.append(item)});more.hidden=ds.length>=list.length;}
- sel.addEventListener('change',()=>{shown=20;draw()});more.addEventListener('click',()=>{shown+=20;draw()});draw();
-}
-
+function renderHistory(h){let p=document.querySelector('#historyPanel');if(!p){p=document.createElement('details');p.id='historyPanel';p.className='card explanation';document.querySelector('#machine').append(p)}p.innerHTML='<summary>历史开奖记录</summary>';const years=[...new Set(h.draws.map(d=>d.date.slice(0,4)))];const label=document.createElement('label');label.textContent='选择年份： ';const sel=document.createElement('select');years.forEach(y=>{const o=document.createElement('option');o.value=y;o.textContent=y+'年';sel.append(o)});label.append(sel);p.append(label);const rows=document.createElement('div');p.append(rows);function draw(){rows.innerHTML='';const ds=h.draws.filter(d=>d.date.startsWith(sel.value));const c=document.createElement('p');c.className='fineprint';c.textContent=`共 ${ds.length} 期 · 由新到旧`;rows.append(c);ds.forEach(d=>{const r=document.createElement('p');r.textContent=`${d.date} · ${d.issue}：${d.main.map(n=>String(n).padStart(2,'0')).join(' ')} ｜ 特别号 ${String(d.special).padStart(2,'0')}`;rows.append(r)})}sel.addEventListener('change',draw);draw()}
 let pickMode='random';
 function sampleUnique(pool,count,weights=null){const items=[...pool],out=[];for(let k=0;k<count;k++){let idx;if(weights){const w=items.map(n=>weights[n]||1),sum=w.reduce((a,b)=>a+b,0);let r=Math.random()*sum;idx=0;for(;idx<w.length;idx++){r-=w[idx];if(r<=0)break}if(idx>=items.length)idx=items.length-1}else idx=Math.floor(Math.random()*items.length);out.push(items[idx]);items.splice(idx,1)}return out.sort((a,b)=>a-b)}
 function generatePick(){const pool=Array.from({length:49},(_,i)=>i+1),weights={};(snapshot?.numberRanking||[]).forEach((x,i)=>weights[x.n]=Math.max(1.2,3.6-i*.3));const main=sampleUnique(pool,6,pickMode==='weighted'?weights:null),remain=pool.filter(n=>!main.includes(n)),special=sampleUnique(remain,1,pickMode==='weighted'?weights:null)[0],w=document.querySelector('#pickResult');w.innerHTML='';main.forEach(n=>w.appendChild(numberWithZodiac(n)));const plus=document.createElement('span');plus.textContent='+';w.appendChild(plus);w.appendChild(numberWithZodiac(special,true))}
@@ -190,19 +122,19 @@ async function refreshResults(){try{
  const loaded=await loadHistory();if(historyCache?.draws){const merged=new Map(loaded.draws.map(d=>[d.issue,d]));historyCache.draws.forEach(d=>{if(!merged.has(d.issue))merged.set(d.issue,d)});loaded.draws=[...merged.values()].sort((a,b)=>b.date.localeCompare(a.date)||b.issue.localeCompare(a.issue));}historyCache=loaded;
  snapshot=recalc(historyCache);
  if(!snapshot)throw Error('无可用历史数据');
- renderLatest();renderRankings();renderSpecialValidation();renderLockedSpecialPrediction();renderBacktest(historyCache);renderModelSummary(historyCache);renderHistory(historyCache);renderTrafficHub(historyCache);generatePick();renderStatus();document.querySelector("#loadError")?.remove()
+ renderLatest();renderRankings();renderSpecialValidation();renderBacktest(historyCache);renderModelSummary(historyCache);renderHistory(historyCache);renderTrafficHub(historyCache);generatePick();renderStatus();document.querySelector("#loadError")?.remove()
 }catch(e){
  console.error(e);
  let box=document.querySelector('#loadError');
- if(!box){box=document.createElement('div');box.id='loadError';box.className='notice';(document.querySelector('.draw-result-box')||document.querySelector('main')).after(box)}
+ if(!box){box=document.createElement('div');box.id='loadError';box.className='notice';document.querySelector('.hero').after(box)}
  box.textContent='数据加载失败：'+(e&&e.message?e.message:'未知错误')+'。请刷新页面重试。'
 }}
 async function boot(){bindUI();await refreshResults();startOfficialSync();setInterval(()=>{if(!document.hidden)refreshResults()},(window.APP_CONFIG?.REFRESH_MINUTES||30)*60000)}boot();
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 function verifiedOfficialDraws(rows){if(!Array.isArray(rows))throw Error('官方数据格式异常');const completed=rows.filter(r=>r.status==='Result').map(r=>{const main=r.drawResult?.drawnNo,special=r.drawResult?.xDrawnNo;if(!/^\d{4}$/.test(String(r.year))||!Number.isInteger(r.no)||r.no<1||r.no>999||!Array.isArray(main)||main.length!==6||![...main,special].every(n=>Number.isInteger(n)&&n>=1&&n<=49)||new Set([...main,special]).size!==7)throw Error('官方号码未完整确认');const date=String(r.drawDate).slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw Error('开奖日期异常');return{issue:String(r.year).slice(-2)+'/'+String(r.no).padStart(3,'0'),date,main:[...main].sort((a,b)=>a-b),special}});if(!completed.length)throw Error('暂未取得已确认结果');return completed.sort((a,b)=>b.date.localeCompare(a.date)||b.issue.localeCompare(a.issue))}
-function startOfficialSync(){const card=document.createElement('details');card.className='card explanation';const title=document.createElement('summary');title.textContent='官方结果同步';const status=document.createElement('p');status.setAttribute('role','status');status.textContent='正在核对香港赛马会结果…';const note=document.createElement('p');note.className='fineprint';note.textContent='网页可见时每2分钟检查；官方发布完整结果后更新。号码按大小排列，不代表出球顺序。';const button=document.createElement('button');button.className='primary';button.textContent='立即核对';card.append(title,status,note,button);document.querySelector('.latest-card').after(card);let busy=false,timer=null,lastChecked=null;
-const request={variables:{lastNDraw:10},query:'query marksixResult($lastNDraw: Int){lotteryDraws(lastNDraw:$lastNDraw){year no drawDate status drawResult{drawnNo xDrawnNo}}}'};
-async function check(){if(busy||document.hidden)return;clearTimeout(timer);busy=true;button.disabled=true;try{const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),12000);let response;try{response=await fetchLiveResult(request,controller.signal)}finally{clearTimeout(timeout)}if(!response.ok)throw Error('官方连接暂不可用');const body=await response.json();if(body.errors)throw Error('官方服务暂不可用');const draws=verifiedOfficialDraws(body.data?.lotteryDraws),latest=draws[0];if(snapshot?.latest&&(latest.date<snapshot.latest.date||latest.issue<snapshot.latest.issue))throw Error('结果服务返回旧期号');const changed=JSON.stringify(snapshot?.latest)!==JSON.stringify(latest);if(snapshot){historyCache.nextDraw=body.data.nextDraw|| (historyCache.nextDraw?.basedOnIssue===latest.issue?historyCache.nextDraw:MarkSixSchedule.pending(latest));snapshot.nextDraw=historyCache.nextDraw;}if(snapshot&&changed){snapshot.latest=latest;if(historyCache?.draws){const merged=new Map(historyCache.draws.map(d=>[d.issue,d]));draws.forEach(d=>merged.set(d.issue,d));historyCache={...historyCache,draws:[...merged.values()].sort((a,b)=>b.date.localeCompare(a.date)||b.issue.localeCompare(a.issue)),checkedAt:new Date().toISOString()};snapshot=recalc(historyCache);renderRankings();renderSpecialValidation();renderSpecialAudit();renderLockedSpecialPrediction();renderBacktest(historyCache);renderModelSummary(historyCache);renderHistory(historyCache)}renderLatest();renderTrafficHub(historyCache);renderStatus()}if(snapshot)renderLatest();lastChecked=new Date().toLocaleString('zh-CN',{timeZone:'Asia/Hong_Kong',hour12:false});status.textContent='已连接官方 · 最新确认 '+latest.issue+'期 · 核对时间 '+lastChecked+'（香港时间）'}catch(e){status.textContent='暂时无法核对官方结果，保留原显示数据。'+(lastChecked?'上次成功核对：'+lastChecked+'。':'')+'15秒后重试。'}finally{busy=false;button.disabled=false;if(!document.hidden)timer=setTimeout(check,120000)}}
+function startOfficialSync(){const card=document.createElement('details');card.className='card explanation';const title=document.createElement('summary');title.textContent='官方结果同步';const status=document.createElement('p');status.setAttribute('role','status');status.textContent='正在核对香港赛马会结果…';const note=document.createElement('p');note.className='fineprint';note.textContent='网页可见时每15秒检查；官方发布完整结果后更新。号码按大小排列，不代表出球顺序。';const button=document.createElement('button');button.className='primary';button.textContent='立即核对';card.append(title,status,note,button);document.querySelector('.latest-card').after(card);let busy=false,timer=null,lastChecked=null;
+const request={variables:{lastNDraw:100},query:'query marksixResult($lastNDraw: Int){lotteryDraws(lastNDraw:$lastNDraw){year no drawDate status drawResult{drawnNo xDrawnNo}}}'};
+async function check(){if(busy||document.hidden)return;clearTimeout(timer);busy=true;button.disabled=true;try{const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),12000);let response;try{response=await fetchLiveResult(request,controller.signal)}finally{clearTimeout(timeout)}if(!response.ok)throw Error('官方连接暂不可用');const body=await response.json();if(body.errors)throw Error('官方服务暂不可用');const draws=verifiedOfficialDraws(body.data?.lotteryDraws),latest=draws[0];if(snapshot?.latest&&(latest.date<snapshot.latest.date||latest.issue<snapshot.latest.issue))throw Error('结果服务返回旧期号');const changed=JSON.stringify(snapshot?.latest)!==JSON.stringify(latest);if(snapshot){historyCache.nextDraw=body.data.nextDraw|| (historyCache.nextDraw?.basedOnIssue===latest.issue?historyCache.nextDraw:MarkSixSchedule.pending(latest));snapshot.nextDraw=historyCache.nextDraw;}if(snapshot&&changed){snapshot.latest=latest;if(historyCache?.draws){const merged=new Map(historyCache.draws.map(d=>[d.issue,d]));draws.forEach(d=>merged.set(d.issue,d));historyCache={...historyCache,draws:[...merged.values()].sort((a,b)=>b.date.localeCompare(a.date)||b.issue.localeCompare(a.issue)),checkedAt:new Date().toISOString()};snapshot=recalc(historyCache);renderRankings();renderSpecialValidation();renderBacktest(historyCache);renderModelSummary(historyCache);renderHistory(historyCache)}renderLatest();renderTrafficHub(historyCache);renderStatus()}if(snapshot)renderLatest();lastChecked=new Date().toLocaleString('zh-CN',{timeZone:'Asia/Hong_Kong',hour12:false});status.textContent='已连接官方 · 最新确认 '+latest.issue+'期 · 核对时间 '+lastChecked+'（香港时间）'}catch(e){status.textContent='暂时无法核对官方结果，保留原显示数据。'+(lastChecked?'上次成功核对：'+lastChecked+'。':'')+'15秒后重试。'}finally{busy=false;button.disabled=false;if(!document.hidden)timer=setTimeout(check,15000)}}
 button.addEventListener('click',check);document.addEventListener('visibilitychange',()=>{clearTimeout(timer);if(!document.hidden)check()});check()}
 
 function zodiacOf(n){return Object.keys(Z).find(z=>Z[z].includes(n))||''}
