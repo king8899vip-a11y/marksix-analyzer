@@ -23,10 +23,13 @@ function zodiacStats(draws){
  const n=draws.length;
  return Object.entries(Z).map(([name,nums])=>{
   const hits=draws.filter(d=>hit(d,nums)).length;
-  const recent=draws.slice(-10).filter(d=>hit(d,nums)).length;
-  const hitRate=hits/n*100,R=roi(hits,n,name);
+  const window20=draws.slice(-20),recent20=window20.filter(d=>hit(d,nums)).length;
+  const window10=draws.slice(-10),recent=window10.filter(d=>hit(d,nums)).length;
+  const recent20Rate=window20.length?recent20/window20.length*100:0;
+  const recent20R=window20.length?roi(recent20,window20.length,name):0;
+  const hitRate=n?hits/n*100:0,R=n?roi(hits,n,name):0;
   const score=hitRate*.4+Math.max(0,Math.min(100,50+R*2))*.25+recent*10*.1+Math.max(0,100-Math.abs(recent*10-hitRate)*2)*.05;
-  return{name,nums,hits,hitRate,R,recent,score}
+  return{name,nums,hits,hitRate,R,recent,recent20,recent20Total:window20.length,recent10Total:window10.length,recent20Rate,recent20R,score}
  }).sort((a,b)=>b.score-a.score)
 }
 function specialStats(draws){
@@ -67,7 +70,7 @@ function recalc(history){
  const counts=Object.fromEntries(Array.from({length:49},(_,i)=>[i+1,0]));draws.forEach(d=>d.main.forEach(x=>counts[x]++));
  const zs=zodiacStats(draws),ss=specialStats(draws);
  const nr=Object.entries(counts).map(([k,v])=>({n:+k,v,label:Object.keys(Z).find(z=>Z[z].includes(+k))})).sort((a,b)=>b.v-a.v).slice(0,10),latest=draws.at(-1);
- return{...snapshot,nextDraw:history.nextDraw,checkedAt:history.checkedAt||new Date().toISOString(),latest,sampleCount:n,hotNumber:nr[0].n,hotZodiac:zs[0].name,numberRanking:nr.map((x,i)=>({n:x.n,label:x.label,score:`${x.v}次 / ${n}期`,note:i?'第五代累计':'当前正选频率最高'})),zodiacRanking:zs.map(x=>({name:x.name,nums:x.nums.map(v=>String(v).padStart(2,'0')).join(' · '),note:`近20期命中 ${x.hits}/${Math.min(n,20)} (${x.hitRate.toFixed(1)}%) · 近10期 ${x.recent}/${Math.min(n,10)} · 近20期ROI ${x.R>=0?'+':''}${x.R.toFixed(1)}%`,trend:`评分 ${x.score.toFixed(1)}`})),specialPool:ss.slice(0,6).map(x=>x.n),specialRanking:ss.slice(0,12),specialBacktest:specialWalkForwardBacktest(draws)}
+ return{...snapshot,nextDraw:history.nextDraw,checkedAt:history.checkedAt||new Date().toISOString(),latest,sampleCount:n,hotNumber:nr[0].n,hotZodiac:zs[0].name,numberRanking:nr.map((x,i)=>({n:x.n,label:x.label,score:`${x.v}次 / ${n}期`,note:i?'第五代累计':'当前正选频率最高'})),zodiacRanking:zs.map(x=>({name:x.name,nums:x.nums.map(v=>String(v).padStart(2,'0')).join(' · '),note:`近20期命中 ${x.recent20}/${x.recent20Total} (${x.recent20Rate.toFixed(1)}%) · 近10期 ${x.recent}/${x.recent10Total} · 近20期ROI ${x.recent20R>=0?'+':''}${x.recent20R.toFixed(1)}%`,trend:`评分 ${x.score.toFixed(1)}`})),specialPool:ss.slice(0,6).map(x=>x.n),specialRanking:ss.slice(0,12),specialBacktest:specialWalkForwardBacktest(draws)}
 }
 function walkForwardBacktest(history,minTrain=15){
  const draws=history.draws.filter(d=>d.issue>='26/047'&&d.issue<='26/999').sort((a,b)=>a.issue.localeCompare(b.issue));
