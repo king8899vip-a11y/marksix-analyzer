@@ -2,8 +2,8 @@
 (()=>{
  const style=document.createElement('style');
  style.textContent=`
- .compact-fold{margin:12px 0;border:1px solid rgba(128,128,128,.22);border-radius:13px;background:var(--card-bg,transparent);overflow:hidden}
- .compact-fold>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 16px;cursor:pointer;font-weight:650;list-style:none}
+ .compact-fold{margin:12px 0;border:1px solid rgba(128,128,128,.22);border-radius:13px;background:var(--card,#fff);color:var(--text,#162033);overflow:hidden}
+ .compact-fold>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 16px;cursor:pointer;font-weight:650;list-style:none;color:var(--text,#162033)}
  .compact-fold>summary::-webkit-details-marker{display:none}
  .compact-fold>summary::after{content:'⌄';font-size:20px;line-height:1;opacity:.65;transition:transform .15s}
  .compact-fold[open]>summary::after{transform:rotate(180deg)}
