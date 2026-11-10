@@ -20,7 +20,7 @@ export async function generatePortal(h,put,shell){
  const homeUrl=new URL('../index.html',import.meta.url);let home=await readFile(homeUrl,'utf8');
  home=home.replace(/(<div id="numberHub"[^>]*>)[\s\S]*?(<\/div>)/,'$1'+Array.from({length:49},(_,i)=>{const n=String(i+1).padStart(2,'0');return `<a class="hub-num" href="./number/${n}/">${n}</a>`}).join('')+'$2');
  home=home.replace(/(<div id="zodiacHub"[^>]*>)[\s\S]*?(<\/div>)/,'$1'+Object.entries(names).map(([slug,name])=>`<a class="hub-zodiac" href="./zodiac/${slug}/">${name}</a>`).join('')+'$2');
- home=home.replace(/(<div id="trafficHub"[^>]*>)[\s\S]*?(<\/div>)/,'$1'+item(href(draws[0]),'最新开奖记录',draws[0].issue+' · '+draws[0].date)+item('machine/5th-gen/','第五代统计专题')+'$2');
+ home=home.replace(/(<div id="trafficHub"[^>]*>)[\s\S]*?(<\/div>)/,'$1'+ '<p class="muted">展开查看最近20期开奖记录。</p>' +'$2');
  await writeFile(homeUrl,home);
  return ['/draw/','/number/','/zodiac/','/search/',...years.map(y=>`/archive/${y}/`)];
 }
