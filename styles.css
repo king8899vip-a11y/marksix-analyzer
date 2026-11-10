@@ -106,3 +106,13 @@ body.dark{--bg:#101925;--card:#1b2737;--text:#eef3fa;--muted:#b0bdd0;--blue:#8bb
 .history-more{display:block;width:100%;padding:12px;margin-top:10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--blue);font-weight:650}
 .history-more[hidden]{display:none}
 @media(max-width:360px){.history-ball{width:30px;height:30px;flex-basis:30px;font-size:12px}.history-balls{gap:2px}}
+
+/* Interactive rolling number demonstration */
+.pick-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+.pick-actions #pickStartBtn,.pick-actions #pickStopBtn{flex:1;min-width:110px;min-height:48px;font-size:17px;font-weight:750}
+.pick-actions #pickStopBtn{background:#ba2432;color:#fff}
+.pick-actions button:disabled{opacity:.45;cursor:not-allowed}
+.pick-status{text-align:center;color:var(--muted);font-size:14px;line-height:1.5;margin:10px 0 0}
+.pick-balls.is-rolling .ball{animation:pick-number-pulse .2s ease-in-out infinite alternate}
+@keyframes pick-number-pulse{from{transform:translateY(-2px);filter:brightness(1.04)}to{transform:translateY(2px);filter:brightness(.96)}}
+@media(prefers-reduced-motion:reduce){.pick-balls.is-rolling .ball{animation:none}}
