@@ -11,7 +11,7 @@
   <meta property="og:description" content="开奖记录、号码、生肖、特别号与第五代搅珠机统计。">
   <link rel="canonical" href="https://yjyq.com/" />
   <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="stylesheet" href="./styles.css?v=3.2.5" />
+  <link rel="stylesheet" href="./styles.css?v=3.2.6" />
   <link rel="stylesheet" href="./font-accessibility.css?v=1.0.2" />
 </head>
 <body>
@@ -29,7 +29,7 @@
         <div class="section-head"><h2>12生肖数据库</h2><span class="muted">第五代样本</span></div>
         <div id="zodiacHub" class="zodiac-hub card"><a class="hub-zodiac" href="./zodiac/horse/">马</a><a class="hub-zodiac" href="./zodiac/snake/">蛇</a><a class="hub-zodiac" href="./zodiac/dragon/">龙</a><a class="hub-zodiac" href="./zodiac/rabbit/">兔</a><a class="hub-zodiac" href="./zodiac/tiger/">虎</a><a class="hub-zodiac" href="./zodiac/ox/">牛</a><a class="hub-zodiac" href="./zodiac/mouse/">鼠</a><a class="hub-zodiac" href="./zodiac/pig/">猪</a><a class="hub-zodiac" href="./zodiac/dog/">狗</a><a class="hub-zodiac" href="./zodiac/rooster/">鸡</a><a class="hub-zodiac" href="./zodiac/monkey/">猴</a><a class="hub-zodiac" href="./zodiac/goat/">羊</a></div>
         <div class="section-head"><h2>数据概览与说明</h2></div><div class="home-summary-visible"><div class="hero card"><div class="hero-stats"><div><strong id="sampleCount">—</strong><span>第五代样本期数</span></div><div><strong id="hotNumber">—</strong><span>正选次数最高</span></div><div><strong id="hotZodiac">—</strong><span>样本生肖</span></div></div><p class="fineprint">历史统计仅供资料参考，不代表未来开奖概率。</p></div></div>
-        <div class="section-head"><h2>数据工具</h2></div><div class="portal-tools-visible"><div class="section-head"><h2>随机号码演示</h2><span class="muted">娱乐模拟</span></div><div class="card picker-card"><div class="picker-tabs"><button class="seg active" data-mode="random">纯随机</button><button class="seg" data-mode="weighted">历史观察型</button></div><div id="pickResult" class="balls pick-balls"></div><div class="pick-actions"><button id="pickBtn" class="primary">生成 6+1</button></div><p class="fineprint">“历史观察型”只按历史样本权重模拟；公平开奖下不会提高下一期客观概率。</p></div></div>
+        <div class="section-head"><h2>数据工具</h2></div><div class="portal-tools-visible"><div class="section-head"><h2>随机号码演示</h2><span class="muted">娱乐模拟</span></div><div class="card picker-card"><div class="picker-tabs"><button class="seg active" data-mode="random">纯随机</button><button class="seg" data-mode="weighted">历史观察型</button></div><div id="pickResult" class="balls pick-balls"></div><div class="pick-actions"><button id="pickStartBtn" class="primary" type="button">开始</button><button id="pickStopBtn" class="primary" type="button" disabled>结束</button></div><p id="pickStatus" class="pick-status" role="status" aria-live="polite">点击「开始」滚动号码，再点「结束」停止。</p><p class="fineprint">“历史观察型”只按历史样本权重模拟；公平开奖下不会提高下一期客观概率。</p></div></div>
       </section>
       <section id="numbers" class="page"><div class="page-title"><button class="back">‹</button><div><h2>号码分析</h2><p>第五代机器 · 正选号码</p></div></div><div class="section-head"><h2>重点观察号码</h2><span class="muted">自动重算</span></div><div id="numberRanking" class="rank-list card"></div></section>
       <section id="zodiac" class="page"><div class="page-title"><button class="back">‹</button><div><h2>生肖分析</h2><p>最近20期命中率 + ROI + 最近10期</p></div></div><div class="notice">不会因为某一期同一生肖一次开出多个号码，就直接判定该生肖“变热”。</div><div id="zodiacRanking" class="rank-list card"></div></section>
@@ -47,7 +47,7 @@
     </dialog>
     <nav class="bottom-nav"><button class="nav-item active" data-target="home"><span>⌂</span><small>首页</small></button><button class="nav-item" data-target="numbers"><span>▥</span><small>号码</small></button><button class="nav-item" data-target="zodiac"><span>◉</span><small>生肖</small></button><button class="nav-item" data-target="special"><span>★</span><small>特别号</small></button><button class="nav-item" data-target="machine"><span>⚙</span><small>机器</small></button></nav>
   </div>
-  <script src="./config.js?v=3.1.0"></script><script src="./data-service.js?v=3.1.0"></script><script src="./schedule.js?v=3.3.2"></script><script src="./app.js?v=3.3.15"></script>
+  <script src="./config.js?v=3.1.0"></script><script src="./data-service.js?v=3.1.0"></script><script src="./schedule.js?v=3.3.2"></script><script src="./app.js?v=3.3.16"></script>
   <script src="./special-prediction.js?v=1.0.1" defer></script>
   <script src="./compact-ui.js?v=1.0.3" defer></script>
   <script src="./analytics.js?v=3.2.4" defer></script>
