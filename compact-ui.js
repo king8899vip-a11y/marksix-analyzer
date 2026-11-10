@@ -49,7 +49,7 @@
   const machine=document.getElementById('machine');
   const note=machine?.querySelector('.page-title + .explanation');
   if(note)fold(note,'换机对比说明','fold-machine-explanation');
-  for(const [id,title] of [['backtestCard','生肖历史回测数据'],['modelSummary','模型评分与验证说明'],['specialValidation','特别号历史滚动回测']]){
+  for(const [id,title] of [['modelSummary','模型评分与验证说明'],['specialValidation','特别号历史滚动回测']]){
    const el=document.getElementById(id);if(el)fold(el,title,'fold-'+id);
   }
   const dash=document.getElementById('specialPredictionDashboard');
