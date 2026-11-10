@@ -104,7 +104,7 @@ async async function renderLockedSpecialPrediction(){
  const [year,num]=latest.issue.split('/');
  const target=year+'/'+String(Number(num)+1).padStart(3,'0');
  let e=document.querySelector('#lockedSpecialPrediction');
- if(!e){e=document.createElement('div');e.id='lockedSpecialPrediction';e.className='card explanation special-locked';document.querySelector('#specialPool')?.before(e)}
+ if(!e){e=document.createElement('div');e.id='lockedSpecialPrediction';e.className='card explanation special-locked';document.querySelector('#lockedSpecialHost')?.append(e)}
  if(!e)return;
  e.innerHTML='<h3>第 '+target+' 期 · 已锁定号码</h3><p>正在读取预测记录…</p>';
  try{
@@ -131,7 +131,7 @@ function renderSpecialAudit(){
  const d=historyCache.draws.filter(x=>x.issue>='26/047'&&x.issue<='26/999');
  const v=specialValidationLast20(d);
  let e=document.querySelector('#specialAudit');
- if(!e){e=document.createElement('div');e.id='specialAudit';e.className='card explanation';document.querySelector('#specialRanking')?.after(e)}
+ if(!e){e=document.createElement('div');e.id='specialAudit';e.className='card explanation';document.querySelector('#specialValidationHost')?.append(e)}
  if(!e)return;
  const pct=n=>v.total?(100*n/v.total).toFixed(1)+'%':'—';
  e.innerHTML='<h3>特别号 · 最近20期历史样本外验证（新版权重）</h3>'+ 
