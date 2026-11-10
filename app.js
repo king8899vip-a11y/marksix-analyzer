@@ -98,15 +98,15 @@ function walkForwardBacktest(history,minTrain=15){
 async function loadHistory(){const r=await fetch('./data/history.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('history');return r.json()}
 function renderLatest(){setText('#nextDrawSchedule',MarkSixSchedule.text(snapshot.nextDraw,snapshot.latest));setText('#sampleCount',snapshot.sampleCount);setText('#hotNumber',String(snapshot.hotNumber).padStart(2,'0'));setText('#hotZodiac',snapshot.hotZodiac);setText('#latestMeta',`${snapshot.latest.date} · ${snapshot.latest.issue}`);const w=document.querySelector('#latestBalls');w.innerHTML='';const withZodiac=(n,s=false)=>{const cell=document.createElement('div');cell.className='draw-number';cell.appendChild(ball(n,s));const label=document.createElement('small');label.className='draw-zodiac';label.textContent=zodiacOf(n);cell.appendChild(label);return cell};snapshot.latest.main.forEach(n=>w.appendChild(withZodiac(n)));const sp=document.querySelector('#specialBall');sp.innerHTML='';sp.appendChild(withZodiac(snapshot.latest.special,true))}
 function renderRankings(){const nr=document.querySelector('#numberRanking');nr.innerHTML='';snapshot.numberRanking.forEach((x,i)=>nr.insertAdjacentHTML('beforeend',`<div class="rank-row"><div class="rank-no">${i+1}</div><div class="rank-main"><b>${String(x.n).padStart(2,'0')} · ${x.label}</b><small>${x.note}</small></div><div class="rank-value">${x.score}</div></div>`));const zr=document.querySelector('#zodiacRanking');zr.innerHTML='';snapshot.zodiacRanking.forEach((x,i)=>zr.insertAdjacentHTML('beforeend',`<div class="rank-row"><div class="rank-no">${i+1}</div><div class="rank-main"><b>${x.name} · ${x.nums}</b><small>${x.note}</small></div><div class="rank-value">${x.trend}</div></div>`));const sp=document.querySelector('#specialPool');sp.innerHTML='';snapshot.specialPool.forEach(n=>sp.insertAdjacentHTML('beforeend',`<span class="chip">${String(n).padStart(2,'0')}</span>`));let sr=document.querySelector('#specialRanking');if(sr){sr.innerHTML='';(snapshot.specialRanking||[]).forEach((x,i)=>sr.insertAdjacentHTML('beforeend',`<div class="rank-row"><div class="rank-no">${i+1}</div><div class="rank-main"><b>${String(x.n).padStart(2,'0')}</b><small>近5/10/20期 ${x.recent5}/${x.recent10}/${x.recent20} · 遗漏 ${x.gap==null?'未开过':x.gap+'期'} · 平均间隔 ${x.avgGap.toFixed(1)} · ${x.zodiacName||''}</small></div><div class="rank-value" title="近期 ${x.parts?.recent?.toFixed(1)||'-'} / 遗漏 ${x.parts?.gap?.toFixed(1)||'-'} / 周期 ${x.parts?.cycle?.toFixed(1)||'-'} / 历史频率 ${x.parts?.frequency?.toFixed(1)||'-'} / 正选活跃 ${x.parts?.main?.toFixed(1)||'-'} / 生肖辅助 ${x.parts?.zodiac?.toFixed(1)||'-'}">预测分 ${x.score.toFixed(1)}</div></div>`))}}
-async function renderLockedSpecialPrediction(){
+async async function renderLockedSpecialPrediction(){
  const latest=historyCache?.draws?.filter(x=>x.issue>='26/047').sort((a,b)=>a.issue.localeCompare(b.issue)).at(-1);
  if(!latest)return;
  const [year,num]=latest.issue.split('/');
  const target=year+'/'+String(Number(num)+1).padStart(3,'0');
  let e=document.querySelector('#lockedSpecialPrediction');
- if(!e){e=document.createElement('div');e.id='lockedSpecialPrediction';e.className='card explanation';document.querySelector('#specialPool')?.before(e)}
+ if(!e){e=document.createElement('div');e.id='lockedSpecialPrediction';e.className='card explanation special-locked';document.querySelector('#specialPool')?.before(e)}
  if(!e)return;
- e.innerHTML='<h3>开奖前锁定预测 · '+target+'期</h3><p>正在核对独立预测快照…</p>';
+ e.innerHTML='<h3>第 '+target+' 期 · 已锁定号码</h3><p>正在读取预测记录…</p>';
  try{
   const path='./data/predictions/special-'+target.replace('/','-')+'.json?t='+Date.now();
   const res=await fetch(path,{cache:'no-store'});
@@ -117,11 +117,13 @@ async function renderLockedSpecialPrediction(){
   if(new Set(nums).size!==10||nums.some(x=>!Number.isInteger(x)||x<1||x>49))throw Error('invalid numbers');
   const time=new Date(data.generatedAt);
   const lockedAt=Number.isNaN(time.getTime())?'时间未提供':new Intl.DateTimeFormat('zh-HK',{timeZone:'Asia/Hong_Kong',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(time)+'（香港时间）';
-  e.innerHTML='<h3>开奖前锁定预测 · '+target+'期</h3><p>依据截至 '+data.sourceThroughIssue+' 期的历史数据 · 快照生成：'+lockedAt+'</p>'+ 
-   '<p><b>Top 10：</b>'+nums.map((n,i)=>(i+1)+'. '+String(n).padStart(2,'0')).join('　')+'</p>'+ 
-   '<p class="fineprint">模型 '+String(data.model||'—')+' · 以下为仓库保存的独立预测文件；下方观察池会随最新开奖重新计算，可能与此处不同。</p>';
+  e.innerHTML='<div class="special-eyebrow">下一期 · '+target+'</div><h3>开奖前锁定 Top 10</h3>'+ 
+   '<div class="special-number-grid">'+nums.map((n,i)=>'<div class="special-number"><small>'+(i+1)+'</small><b>'+String(n).padStart(2,'0')+'</b></div>').join('')+'</div>'+ 
+   '<p class="special-meta">锁定：'+lockedAt+' · 数据截至 '+data.sourceThroughIssue+' 期</p>'+ 
+   '<p class="fineprint">以下号码为已保存快照，并非开奖后重新排序。</p>';
+
  }catch{
-  e.innerHTML='<h3>开奖前锁定预测 · '+target+'期</h3><p>暂未找到与最新开奖数据匹配的锁定快照。下方仅为实时观察池，不能作为已锁定的开奖前预测。</p>';
+  e.innerHTML='<h3>第 '+target+' 期 · 锁定预测暂不可用</h3><p>尚无可核对的锁定记录；下方实时号码不能视为开奖前预测。</p>';
  }
 }
 function renderSpecialAudit(){
