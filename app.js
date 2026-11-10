@@ -97,7 +97,8 @@ function renderSpecialValidation(){
 function renderBacktest(h){
  const bt=walkForwardBacktest(h);
  let card=document.querySelector('#backtestCard');
- if(!card){card=document.createElement('div');card.id='backtestCard';card.className='card explanation';document.querySelector('#machine').append(card)}
+ if(!card){card=document.createElement('div');card.id='backtestCard';card.className='card explanation'}
+ const machine=document.querySelector('#machine');if(machine&&machine.querySelector('.page-title')?.nextElementSibling!==card)machine.querySelector('.page-title').after(card);
  const edge=bt.roiPct>0&&bt.lastRoi>0;
  card.innerHTML=`<h3>滚动样本外回测</h3>
  <p class="fineprint">每一期只使用当时之前的数据选“第一名生肖”，再检查下一期是否命中，避免偷看未来。</p>
@@ -159,7 +160,6 @@ function bindUI(){
  }));
  document.querySelector('#pickStartBtn')?.addEventListener('click',startPickRoll);
  document.querySelector('#pickStopBtn')?.addEventListener('click',()=>stopPickRoll(true));
- document.querySelector('#themeBtn').addEventListener('click',()=>document.body.classList.toggle('dark'));
  document.addEventListener('visibilitychange',()=>{if(document.hidden&&pickRollingTimer!==null)stopPickRoll(false)});
 }
 function renderModelSummary(h){const bt=walkForwardBacktest(h),top=snapshot.zodiacRanking?.[0];let e=document.querySelector('#modelSummary');if(!e){e=document.createElement('div');e.id='modelSummary';e.className='card explanation';document.querySelector('#machine').append(e)}const valid=bt.total>=20&&bt.roiPct>0&&bt.lastRoi>0;e.innerHTML=`<h3>模型 v2.0 · 固定规则</h3><p><b>当前单肖第一：</b>${top?.name||'—'}　<b>模型状态：</b>${valid?'样本外暂为正':'暂无稳定样本外优势'}</p><p class="fineprint">最近${bt.last20}期：${bt.lastWins}/${bt.last20}命中 · ROI ${bt.lastRoi>=0?'+':''}${bt.lastRoi.toFixed(1)}% ｜ 累计ROI ${bt.roiPct>=0?'+':''}${bt.roiPct.toFixed(1)}%</p><p class="fineprint">26/099：临时备用机事件，仅标记观察，不参与人工加权。</p>`}
