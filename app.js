@@ -122,7 +122,7 @@ async function refreshResults(){try{
  const loaded=await loadHistory();if(historyCache?.draws){const merged=new Map(loaded.draws.map(d=>[d.issue,d]));historyCache.draws.forEach(d=>{if(!merged.has(d.issue))merged.set(d.issue,d)});loaded.draws=[...merged.values()].sort((a,b)=>b.date.localeCompare(a.date)||b.issue.localeCompare(a.issue));}historyCache=loaded;
  snapshot=recalc(historyCache);
  if(!snapshot)throw Error('无可用历史数据');
- renderLatest();renderRankings();renderSpecialValidation();renderBacktest(historyCache);renderModelSummary(historyCache);renderHistory(historyCache);renderTrafficHub(historyCache);generatePick();renderStatus();document.querySelector("#loadError")?.remove()
+ renderLatest();renderRankings();renderSpecialValidation();renderBacktest(historyCache);renderModelSummary(historyCache);renderTrafficHub(historyCache);generatePick();renderStatus();document.querySelector("#loadError")?.remove()
 }catch(e){
  console.error(e);
  let box=document.querySelector('#loadError');
@@ -142,10 +142,7 @@ function renderTrafficHub(h){
  const draws=h.draws.filter(d=>d.issue>='26/047'&&d.issue<='26/999').sort((a,b)=>a.issue.localeCompare(b.issue));
  const latest=draws.at(-1),traffic=document.querySelector('#trafficHub'),nums=document.querySelector('#numberHub'),zods=document.querySelector('#zodiacHub');
  if(!traffic||!nums||!zods||!latest)return;
- traffic.innerHTML=[
-  ['第五代号码热榜','按正选累计频率查看','./machine/compare/'],
-
- ].map(x=>'<a class="traffic-link" href="'+x[2]+'"><b>'+x[0]+'</b><small>'+x[1]+'</small></a>').join('');
+ traffic.innerHTML='';
  const recentDraws=draws.slice(-20).reverse();
  const two=n=>String(n).padStart(2,'0');
  const recentHtml=recentDraws.map(d=>'<a class="recent-draw-item" href="./draw/'+encodeURIComponent(d.issue.replace('/','-'))+'/"><span class="recent-draw-meta"><b>第'+d.issue+'期</b><time>'+d.date+'</time></span><span class="recent-draw-balls">'+d.main.map(n=>'<span>'+two(n)+'</span>').join('')+'<strong title="特别号">'+two(d.special)+'</strong></span></a>').join('');
