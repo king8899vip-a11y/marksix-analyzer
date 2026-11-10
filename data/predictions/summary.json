@@ -1,0 +1,90 @@
+{
+  "generatedAt": "2026-11-10T15:41:51.673Z",
+  "latestResultIssue": "26/119",
+  "current": {
+    "targetIssue": "26/120",
+    "sourceThroughIssue": "26/119",
+    "generatedAt": "2026-11-10T13:50:54.830Z",
+    "model": "special-v2",
+    "top10": [
+      {
+        "rank": 1,
+        "number": 31,
+        "score": 48.936
+      },
+      {
+        "rank": 2,
+        "number": 29,
+        "score": 41.6
+      },
+      {
+        "rank": 3,
+        "number": 11,
+        "score": 38.268
+      },
+      {
+        "rank": 4,
+        "number": 47,
+        "score": 38.145
+      },
+      {
+        "rank": 5,
+        "number": 5,
+        "score": 37.8
+      },
+      {
+        "rank": 6,
+        "number": 17,
+        "score": 36.531
+      },
+      {
+        "rank": 7,
+        "number": 8,
+        "score": 35.399
+      },
+      {
+        "rank": 8,
+        "number": 28,
+        "score": 33.609
+      },
+      {
+        "rank": 9,
+        "number": 19,
+        "score": 32.95
+      },
+      {
+        "rank": 10,
+        "number": 35,
+        "score": 32.9
+      }
+    ],
+    "actualSpecial": null,
+    "hitRank": null
+  },
+  "previous": null,
+  "recent20": {
+    "1": {
+      "hits": 0,
+      "total": 0,
+      "rate": null
+    },
+    "3": {
+      "hits": 0,
+      "total": 0,
+      "rate": null
+    },
+    "6": {
+      "hits": 0,
+      "total": 0,
+      "rate": null
+    },
+    "10": {
+      "hits": 0,
+      "total": 0,
+      "rate": null
+    }
+  },
+  "verifiedHistory": [],
+  "archivedCount": 1,
+  "note": "仅纳入已留档的逐期预测；无预测档案的历史期数不补造记录。"
+}
