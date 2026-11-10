@@ -11,6 +11,21 @@
  .compact-fold .section-head{margin-top:0}
  .compact-fold .number-hub,.compact-fold .zodiac-hub,.compact-fold .traffic-grid{margin-top:4px}
  .compact-fold .forecast-card{margin-top:0}
+ .recent-draws-panel{grid-column:1/-1;border:1px solid var(--line,#e6ebf2);border-radius:12px;background:var(--card,#fff);overflow:hidden;color:var(--text,#162033)}
+ .recent-draws-panel>summary{padding:13px 12px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700}
+ .recent-draws-panel>summary::-webkit-details-marker{display:none}
+ .recent-draws-panel>summary::after{content:'⌄';font-size:20px;opacity:.7}
+ .recent-draws-panel[open]>summary::after{content:'⌃'}
+ .recent-draws-panel>summary small{font-size:11px;font-weight:400;color:var(--muted,#718096)}
+ .recent-draw-list{padding:0 8px 8px;display:grid;gap:6px}
+ .recent-draw-item{display:block;text-decoration:none;color:var(--text,#162033);border:1px solid var(--line,#e6ebf2);border-radius:10px;padding:10px;background:var(--card,#fff)}
+ .recent-draw-meta{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:12px}
+ .recent-draw-meta time{color:var(--muted,#718096)}
+ .recent-draw-balls{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;align-items:center}
+ .recent-draw-balls span,.recent-draw-balls strong{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--bg,#f4f7fb);border:1px solid var(--line,#e6ebf2);color:var(--text,#162033);font-size:12px;font-weight:700}
+ .recent-draw-balls strong{background:#b91c1c;border-color:#b91c1c;color:#fff}
+ @media(max-width:380px){.recent-draw-balls span,.recent-draw-balls strong{width:27px;height:27px;font-size:11px}}
+
  .compact-fold:focus-within{outline-offset:2px}
  @media(max-width:480px){.compact-fold>summary{padding:13px 14px}.compact-fold>.compact-body{padding:0 10px 12px}}
  `;
