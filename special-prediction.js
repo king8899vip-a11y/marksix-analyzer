@@ -9,16 +9,20 @@
  const css=document.createElement('style');
  css.textContent=`
  #specialPredictionDashboard{margin:12px 0 24px}
- #specialPredictionDashboard .forecast-card{background:var(--card-bg,#fff);border:1px solid rgba(125,125,125,.22);border-radius:14px;padding:16px;margin:12px 0}
+ #specialPredictionDashboard .forecast-card{background:var(--card,#fff);color:var(--text,#162033);border:1px solid var(--line,rgba(125,125,125,.22));border-radius:14px;padding:16px;margin:12px 0}
  #specialPredictionDashboard .forecast-pool{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-top:12px}
- #specialPredictionDashboard .forecast-number{border-radius:11px;border:1px solid rgba(125,125,125,.23);text-align:center;padding:12px 2px;background:rgba(125,125,125,.07)}
+ #specialPredictionDashboard .forecast-number{color:var(--text,#162033);border-radius:11px;border:1px solid rgba(125,125,125,.23);text-align:center;padding:12px 2px;background:rgba(125,125,125,.07)}
  #specialPredictionDashboard .forecast-number b{display:block;font-size:24px;font-variant-numeric:tabular-nums}
  #specialPredictionDashboard .forecast-number small{display:block;font-size:11px;opacity:.75}
- #specialPredictionDashboard .forecast-number.hit{background:#b91c1c!important;border-color:#991b1b!important;color:white!important}
- #specialPredictionDashboard .forecast-meta{font-size:13px;opacity:.8;line-height:1.6}
+ #specialPredictionDashboard .forecast-number.hit{background:#b91c1c!important;border-color:#991b1b!important;color:#fff!important}
+ #specialPredictionDashboard .forecast-meta{font-size:13px;color:var(--muted,#718096);opacity:1;line-height:1.6}
  #specialPredictionDashboard .forecast-history{display:flex;gap:9px;flex-wrap:wrap}
  #specialPredictionDashboard .forecast-history span{border:1px solid rgba(125,125,125,.25);padding:5px 8px;border-radius:8px}
- #specialPredictionDashboard .forecast-error{border:1px solid #dc2626;border-radius:9px;padding:12px}
+ #specialPredictionDashboard .forecast-error{color:var(--text,#162033);border:1px solid #dc2626;border-radius:9px;padding:12px}
+ #specialPredictionDashboard h2,#specialPredictionDashboard h3,#specialPredictionDashboard p{color:inherit}
+ #specialPredictionDashboard .forecast-card .forecast-meta{color:var(--muted,#718096)}
+ body.dark #specialPredictionDashboard .forecast-number{background:#202b3d;color:#edf3ff;border-color:#36455e}
+ body.dark #specialPredictionDashboard .forecast-number.hit{color:#fff!important}
  `;
  document.head.append(css);
  const fmt=n=>String(n).padStart(2,'0');
