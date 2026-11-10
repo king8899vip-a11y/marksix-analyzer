@@ -11,6 +11,7 @@
  .compact-fold .section-head{margin-top:0}
  .compact-fold .number-hub,.compact-fold .zodiac-hub,.compact-fold .traffic-grid{margin-top:4px}
  .compact-fold .forecast-card{margin-top:0}
+ .recent-draws-host{display:block;width:100%;margin-bottom:12px}
  .recent-draws-panel{grid-column:1/-1;border:1px solid var(--line,#e6ebf2);border-radius:12px;background:var(--card,#fff);overflow:hidden;color:var(--text,#162033)}
  .recent-draws-panel>summary{padding:13px 12px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700}
  .recent-draws-panel>summary::-webkit-details-marker{display:none}
@@ -42,8 +43,7 @@
   body.append(content);
  }
  function apply(){
-  const traffic=document.getElementById('trafficHub'),numbers=document.getElementById('numberHub'),zodiac=document.getElementById('zodiacHub');
-  if(traffic)fold(traffic,'更多数据与专题','fold-more-data',traffic.previousElementSibling?.classList.contains('section-head')?traffic.previousElementSibling:null);
+  const numbers=document.getElementById('numberHub'),zodiac=document.getElementById('zodiacHub');
   if(numbers)fold(numbers,'49个号码数据库 · 点击展开','fold-number-directory',numbers.previousElementSibling?.classList.contains('section-head')?numbers.previousElementSibling:null);
   if(zodiac)fold(zodiac,'12生肖数据库 · 点击展开','fold-zodiac-directory',zodiac.previousElementSibling?.classList.contains('section-head')?zodiac.previousElementSibling:null);
   const machine=document.getElementById('machine');
