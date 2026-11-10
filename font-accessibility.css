@@ -1,7 +1,6 @@
-/* Accessibility font scale: accessible base and two clearly larger modes. */
+/* Accessibility font scale: small and large modes. */
 body{--font-step:0px;font-size:16px;line-height:1.55;-webkit-text-size-adjust:100%;text-size-adjust:100%}
-body.font-large{--font-step:3px}
-body.font-extra{--font-step:6px}
+body.font-large{--font-step:5px}
 body :is(.subtitle,.muted,.fineprint,.page-title p,.action-card small,.traffic-link small,.catalog-item small,.portal-note,.history-item-heading,.history-controls,.special-meta,.special-eyebrow,.rank-main small,.rank-value small,.draw-video-note,.forecast-meta,.recent-draw-meta,.recent-draws-panel>summary small,.compact-fold>summary small,.portal-categories small,.explanation p,.metric span,.badge,.chip,.nav-item small,.draw-zodiac){font-size:calc(14px + var(--font-step))!important;line-height:1.55}
 body :is(.section-head h2,.page-title h2,.draw-result-heading h2,.focus-copy h3,.explanation h3,.forecast-card h3,.special-locked h3){font-size:calc(20px + var(--font-step))!important;line-height:1.35}
 body :is(.section-head,.compact-fold>summary,.recent-draws-panel>summary,.special-extra>summary,.portal-tools-visible,.picker-card,.action-card,.primary,.seg,.traffic-link,.catalog-item,.rank-row,.rank-value,.rank-main b,.recent-draw-item,.recent-draw-meta,.portal-search button,.history-controls select){font-size:calc(16px + var(--font-step))!important}
@@ -14,8 +13,8 @@ body :is(.portal-search input,.portal-search button,.picker-tabs button,.pick-ac
 body .rank-row{grid-template-columns:32px minmax(0,1fr) minmax(72px,auto)}
 body .rank-value{max-width:120px}
 body .recent-draw-balls span,body .recent-draw-balls strong{width:clamp(30px,8vw,38px);height:clamp(30px,8vw,38px)}
-body.font-extra .bottom-nav{padding-bottom:calc(10px + env(safe-area-inset-bottom))}
-body.font-extra .nav-item span{font-size:24px}
+body.font-large .bottom-nav{padding-bottom:calc(10px + env(safe-area-inset-bottom))}
+body.font-large .nav-item span{font-size:24px}
 .font-scale-control{display:flex;align-items:center;gap:7px;flex-shrink:0}
 .font-scale-control button{border:1px solid var(--line);color:var(--text);background:var(--card);border-radius:10px;padding:8px 10px;min-height:42px;font-size:15px;line-height:1;font-weight:800;white-space:nowrap}
 .font-scale-control button[aria-pressed="true"]{background:var(--blue);color:#fff;border-color:var(--blue)}
