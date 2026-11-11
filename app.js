@@ -194,7 +194,8 @@ function renderTrafficHub(h){
  traffic.innerHTML='';
  const recentDraws=draws.slice(-20).reverse();
  const two=n=>String(n).padStart(2,'0');
- const recentHtml=recentDraws.map(d=>'<a class="recent-draw-item" href="./draw/'+encodeURIComponent(d.issue.replace('/','-'))+'/"><span class="recent-draw-meta"><b>第'+d.issue+'期</b><time>'+d.date+'</time></span><span class="recent-draw-balls">'+d.main.map(n=>'<span>'+two(n)+'</span>').join('')+'<strong title="特别号">'+two(d.special)+'</strong></span></a>').join('');
+ const recentCell=(n,special=false)=>'<span class="recent-draw-cell'+(special?' is-special':'')+'"><span class="recent-draw-ball"'+(special?' title="特别号"':'')+'>'+two(n)+'</span><small class="recent-draw-zodiac">'+zodiacOf(n)+'</small></span>';
+ const recentHtml=recentDraws.map(d=>'<a class="recent-draw-item" href="./draw/'+encodeURIComponent(d.issue.replace('/','-'))+'/"><span class="recent-draw-meta"><b>第'+d.issue+'期</b><time>'+d.date+'</time></span><span class="recent-draw-balls">'+d.main.map(n=>recentCell(n)).join('')+recentCell(d.special,true)+'</span></a>').join('');
  const recentBlock='<details class="recent-draws-panel"><summary>最近20期开奖记录 <small>当前 '+recentDraws.length+' 期 · 点击查看号码</small></summary><div class="recent-draw-list">'+recentHtml+'</div></details>';
  traffic.insertAdjacentHTML('afterbegin',recentBlock);
  const counts=Object.fromEntries(Array.from({length:49},(_,i)=>[i+1,0]));draws.forEach(d=>d.main.forEach(n=>counts[n]++));
