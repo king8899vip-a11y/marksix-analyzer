@@ -25,6 +25,7 @@ export async function generatePortal(h,put,shell){
  const drawCell=(n,special=false)=>'<span class="recent-draw-cell'+(special?' is-special':'')+'"><span class="recent-draw-ball"'+(special?' title="特别号"':'')+'>'+String(n).padStart(2,'0')+'</span><small class="recent-draw-zodiac">'+zodiacs[(n-1)%12]+'</small></span>';
  const latestHtml='<details class="recent-draws-panel"><summary>最近20期开奖记录 <small>当前 '+latest20.length+' 期 · 点击查看号码</small></summary><div class="recent-draw-list">'+latest20.map(d=>'<a class="recent-draw-item" href="./draw/'+d.issue.replace('/','-')+'/"><span class="recent-draw-meta"><b>第'+d.issue+'期</b><time>'+d.date+'</time></span><span class="recent-draw-balls">'+d.main.map(n=>drawCell(n)).join('')+drawCell(d.special,true)+'</span></a>').join('')+'</div></details>';
  home=home.replace(/<div id="trafficHub"[^>]*>[\s\S]*?(?=\n        <div class="section-head"><h2>49号码数据库)/,'<div id="trafficHub" class="recent-draws-host">'+latestHtml+'</div>');
+ // Replace the entire traffic section, including any stale closing tags, before the number directory.
  await writeFile(homeUrl,home);
  return ['/draw/','/number/','/zodiac/','/search/',...years.map(y=>`/archive/${y}/`)];
 }
