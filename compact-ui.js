@@ -22,10 +22,12 @@
  .recent-draw-item{display:block;text-decoration:none;color:var(--text,#162033);border:1px solid var(--line,#e6ebf2);border-radius:10px;padding:10px;background:var(--card,#fff)}
  .recent-draw-meta{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:12px}
  .recent-draw-meta time{color:var(--muted,#718096)}
- .recent-draw-balls{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;align-items:center}
- .recent-draw-balls span,.recent-draw-balls strong{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--bg,#f4f7fb);border:1px solid var(--line,#e6ebf2);color:var(--text,#162033);font-size:12px;font-weight:700}
- .recent-draw-balls strong{background:#b91c1c;border-color:#b91c1c;color:#fff}
- @media(max-width:380px){.recent-draw-balls span,.recent-draw-balls strong{width:27px;height:27px;font-size:11px}}
+ .recent-draw-balls{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:10px;align-items:start}
+ .recent-draw-cell{display:flex;min-width:0;align-items:center;flex-direction:column;gap:5px;color:var(--text,#162033)}
+ .recent-draw-balls .recent-draw-ball{display:grid;place-items:center;width:min(100%,38px);aspect-ratio:1;border-radius:50%;background:var(--bg,#f4f7fb);border:1px solid var(--line,#e6ebf2);color:var(--text,#162033);font-size:clamp(12px,3vw,15px);font-weight:700}
+ .recent-draw-cell.is-special .recent-draw-ball{background:#b91c1c;border-color:#b91c1c;color:#fff}
+ .recent-draw-zodiac{font-size:13px;line-height:1.2;font-weight:600;color:var(--text,#162033)}
+ @media(max-width:380px){.recent-draw-balls{gap:2px}.recent-draw-zodiac{font-size:12px}}
 
  .compact-fold:focus-within{outline-offset:2px}
  @media(max-width:480px){.compact-fold>summary{padding:13px 14px}.compact-fold>.compact-body{padding:0 10px 12px}}
