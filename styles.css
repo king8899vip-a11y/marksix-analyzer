@@ -116,3 +116,20 @@ body.dark{--bg:#101925;--card:#1b2737;--text:#eef3fa;--muted:#b0bdd0;--blue:#8bb
 .pick-balls.is-rolling .ball{animation:pick-number-pulse .2s ease-in-out infinite alternate}
 @keyframes pick-number-pulse{from{transform:translateY(-2px);filter:brightness(1.04)}to{transform:translateY(2px);filter:brightness(.96)}}
 @media(prefers-reduced-motion:reduce){.pick-balls.is-rolling .ball{animation:none}}
+
+/* Static latest-20 draw list, visible even before JavaScript loads. */
+.recent-draws-host{width:100%;margin-bottom:12px}
+.recent-draws-panel{border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden;color:var(--text)}
+.recent-draws-panel>summary{padding:15px 14px;cursor:pointer;font-weight:750;display:flex;justify-content:space-between;gap:8px;list-style:none;align-items:center}
+.recent-draws-panel>summary::-webkit-details-marker{display:none}
+.recent-draws-panel>summary small{font-weight:400;font-size:13px;color:var(--muted)}
+.recent-draw-list{padding:0 12px 12px}
+.recent-draw-item{display:block;text-decoration:none;color:var(--text);padding:12px 0;border-top:1px solid var(--line)}
+.recent-draw-meta{display:flex;justify-content:space-between;gap:8px;font-size:14px;align-items:center}
+.recent-draw-meta time{color:var(--muted)}
+.recent-draw-balls{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:10px;align-items:start}
+.recent-draw-cell{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}
+.recent-draw-balls .recent-draw-ball{display:grid;place-items:center;width:min(100%,38px);aspect-ratio:1;border-radius:50%;background:var(--bg);border:1px solid var(--line);color:var(--text);font-size:clamp(12px,3vw,15px);font-weight:750}
+.recent-draw-cell.is-special .recent-draw-ball{background:#b91c1c;color:white;border-color:#b91c1c}
+.recent-draw-zodiac{font-size:13px;line-height:1.2;color:var(--text);font-weight:650}
+@media(max-width:380px){.recent-draw-balls{gap:2px}.recent-draw-zodiac{font-size:12px}}
