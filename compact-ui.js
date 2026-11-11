@@ -31,6 +31,16 @@
 
  .compact-fold:focus-within{outline-offset:2px}
  @media(max-width:480px){.compact-fold>summary{padding:13px 14px}.compact-fold>.compact-body{padding:0 10px 12px}}
+
+ /* Prevent font sizing overrides from stretching zodiac containers into balls. */
+ .recent-draw-item{box-sizing:border-box;min-width:0;overflow:hidden}
+ .recent-draw-balls{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;align-items:start}
+ .recent-draw-balls .recent-draw-cell{display:flex;width:auto!important;height:auto!important;min-width:0;flex-direction:column;align-items:center;justify-content:flex-start;gap:6px;line-height:1.2}
+ .recent-draw-balls .recent-draw-cell .recent-draw-ball{flex:0 0 auto;box-sizing:border-box;min-width:0;width:min(100%,36px);height:auto;aspect-ratio:1;border-radius:50%;line-height:1}
+ .recent-draw-balls .recent-draw-zodiac{display:block;position:static;width:auto!important;height:auto!important;margin:0;min-height:18px;line-height:1.35;text-align:center;font-size:13px}
+ .recent-draw-list{gap:10px;padding-bottom:14px}
+ .recent-draw-item{padding:14px 10px;min-height:105px}
+ @media(max-width:390px){.recent-draw-balls{gap:2px}.recent-draw-item{padding:12px 6px}.recent-draw-balls .recent-draw-zodiac{font-size:12px}}
  `;
  document.head.append(style);
  function fold(content,title,id,heading=null){
