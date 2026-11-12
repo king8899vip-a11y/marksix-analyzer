@@ -1,0 +1,59 @@
+{
+  "model": "special-v2",
+  "targetIssue": "26/121",
+  "sourceThroughIssue": "26/120",
+  "generatedAt": "2026-11-12T14:11:57.449Z",
+  "top10": [
+    {
+      "rank": 1,
+      "number": 31,
+      "score": 41.257
+    },
+    {
+      "rank": 2,
+      "number": 29,
+      "score": 40.4
+    },
+    {
+      "rank": 3,
+      "number": 8,
+      "score": 37.516
+    },
+    {
+      "rank": 4,
+      "number": 11,
+      "score": 36.837
+    },
+    {
+      "rank": 5,
+      "number": 17,
+      "score": 36.776
+    },
+    {
+      "rank": 6,
+      "number": 47,
+      "score": 36.731
+    },
+    {
+      "rank": 7,
+      "number": 5,
+      "score": 34.6
+    },
+    {
+      "rank": 8,
+      "number": 28,
+      "score": 34.564
+    },
+    {
+      "rank": 9,
+      "number": 24,
+      "score": 33.781
+    },
+    {
+      "rank": 10,
+      "number": 19,
+      "score": 32.245
+    }
+  ],
+  "status": "locked-before-result"
+}
