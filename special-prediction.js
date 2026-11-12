@@ -28,11 +28,22 @@
  const fmt=n=>String(n).padStart(2,'0');
  const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const numbers=(top,hit)=>top.map((x,i)=>`<div class="forecast-number ${x.number===hit?'hit':''}"><b>${fmt(x.number)}</b><small>Top ${i+1}</small></div>`).join('');
- function render(data){
+ function drawOverdue(history,data){
+   const next=history?.nextDraw;
+   if(!next?.date||!data?.current||next.issue!==data.current.targetIssue)return false;
+   const time=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Hong_Kong',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());
+   const parts=Object.fromEntries(time.map(x=>[x.type,x.value]));
+   const today=parts.year+'-'+parts.month+'-'+parts.day;
+   const hhmm=parts.hour+':'+parts.minute;
+   // Use a conservative grace period after the advertised 21:30 draw.
+   return today>next.date||(today===next.date&&hhmm>='21:45');
+ }
+ function render(data,overdue=false){
    const current=data.current, previous=data.previous, stats=data.recent20||{};
-   let html='<div class="section-head"><h2>特别号观察池 · 下一期预测</h2></div>';
+   let html='<div class="section-head"><h2>特别号观察池 · '+(overdue?'等待官方核实':'下一期预测')+'</h2></div>';
    if(current){
-    html+=`<div class="forecast-card"><h3>第 ${safe(current.targetIssue)} 期 · 开奖前锁定预测</h3><p class="forecast-meta">依据截至 ${safe(current.sourceThroughIssue)} 期历史记录 · 预测锁定时间：${safe(current.generatedAt?.replace('T',' ').slice(0,19))} UTC · 重点观察前6码，完整保留Top10</p><div class="forecast-pool">${numbers(current.top10,null)}</div><p class="forecast-meta">此处为历史数据模型排序，不代表公平开奖的客观命中概率提高。</p></div>`;
+    if(overdue)html+='<div class="forecast-card" role="status"><b>本期已到开奖时段，官方结果仍未同步。</b><p>第 '+safe(current.targetIssue)+' 期为开奖前锁定的历史预测，不是下一期的新预测。待官方结果确认后，会显示验证并生成下期预测。</p></div>';
+    html+=`<div class="forecast-card"><h3>第 ${safe(current.targetIssue)} 期 · ${overdue?'待核实的开奖前预测':'开奖前锁定预测'}</h3><p class="forecast-meta">依据截至 ${safe(current.sourceThroughIssue)} 期历史记录 · 预测锁定时间：${safe(current.generatedAt?.replace('T',' ').slice(0,19))} UTC · 重点观察前6码，完整保留Top10</p><div class="forecast-pool">${numbers(current.top10,null)}</div><p class="forecast-meta">此处为历史数据模型排序，不代表公平开奖的客观命中概率提高。</p></div>`;
    }else{
     html+='<div class="forecast-card forecast-error">下一期预测档案尚未生成或资料不同步。不会以旧版静态号码冒充本期预测。</div>';
    }
@@ -54,12 +65,17 @@
    if(!r.ok)throw Error('HTTP '+r.status);
    const data=await r.json();
    if(!data||!Array.isArray(data.current?.top10)&&!Array.isArray(data.verifiedHistory))throw Error('预测档案格式错误');
-   render(data);
+   let overdue=false;
+   try{
+    const h=await fetch('./data/history.json?ts='+Date.now(),{cache:'no-store'});
+    if(h.ok)overdue=drawOverdue(await h.json(),data);
+   }catch{}
+   render(data,overdue);
   }catch(e){root.innerHTML='<div class="forecast-card forecast-error">特别号预测档案暂时无法加载：'+safe(e.message)+'。不展示旧版号码，请稍后刷新。</div>';
    const p=document.getElementById('specialPool');if(p)p.style.display='none';
   }
  }
  reload();
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)reload()});
- setInterval(()=>{if(!document.hidden)reload()},5*60*1000);
+ setInterval(()=>{if(!document.hidden)reload()},60*1000);
 })();
