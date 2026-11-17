@@ -1,7 +1,67 @@
 {
-  "generatedAt": "2026-11-17T12:06:21.421Z",
-  "latestResultIssue": "26/121",
+  "generatedAt": "2026-11-17T14:04:51.416Z",
+  "latestResultIssue": "26/122",
   "current": {
+    "targetIssue": "26/123",
+    "sourceThroughIssue": "26/122",
+    "generatedAt": "2026-11-17T14:04:51.410Z",
+    "model": "special-v2",
+    "top10": [
+      {
+        "rank": 1,
+        "number": 29,
+        "score": 37.8
+      },
+      {
+        "rank": 2,
+        "number": 28,
+        "score": 37.023
+      },
+      {
+        "rank": 3,
+        "number": 24,
+        "score": 36.041
+      },
+      {
+        "rank": 4,
+        "number": 11,
+        "score": 35.074
+      },
+      {
+        "rank": 5,
+        "number": 47,
+        "score": 34.803
+      },
+      {
+        "rank": 6,
+        "number": 8,
+        "score": 33.999
+      },
+      {
+        "rank": 7,
+        "number": 17,
+        "score": 33.565
+      },
+      {
+        "rank": 8,
+        "number": 19,
+        "score": 32.986
+      },
+      {
+        "rank": 9,
+        "number": 35,
+        "score": 31.66
+      },
+      {
+        "rank": 10,
+        "number": 42,
+        "score": 30.907
+      }
+    ],
+    "actualSpecial": null,
+    "hitRank": null
+  },
+  "previous": {
     "targetIssue": "26/122",
     "sourceThroughIssue": "26/121",
     "generatedAt": "2026-11-15T14:13:09.005Z",
@@ -58,92 +118,92 @@
         "score": 33.49
       }
     ],
-    "actualSpecial": null,
-    "hitRank": null
-  },
-  "previous": {
-    "targetIssue": "26/121",
-    "sourceThroughIssue": "26/120",
-    "generatedAt": "2026-11-12T14:11:57.449Z",
-    "model": "special-v2",
-    "top10": [
-      {
-        "rank": 1,
-        "number": 31,
-        "score": 41.257
-      },
-      {
-        "rank": 2,
-        "number": 29,
-        "score": 40.4
-      },
-      {
-        "rank": 3,
-        "number": 8,
-        "score": 37.516
-      },
-      {
-        "rank": 4,
-        "number": 11,
-        "score": 36.837
-      },
-      {
-        "rank": 5,
-        "number": 17,
-        "score": 36.776
-      },
-      {
-        "rank": 6,
-        "number": 47,
-        "score": 36.731
-      },
-      {
-        "rank": 7,
-        "number": 5,
-        "score": 34.6
-      },
-      {
-        "rank": 8,
-        "number": 28,
-        "score": 34.564
-      },
-      {
-        "rank": 9,
-        "number": 24,
-        "score": 33.781
-      },
-      {
-        "rank": 10,
-        "number": 19,
-        "score": 32.245
-      }
-    ],
-    "actualSpecial": 48,
+    "actualSpecial": 36,
     "hitRank": null
   },
   "recent20": {
     "1": {
       "hits": 0,
-      "total": 2,
+      "total": 3,
       "rate": 0
     },
     "3": {
       "hits": 0,
-      "total": 2,
+      "total": 3,
       "rate": 0
     },
     "6": {
       "hits": 0,
-      "total": 2,
+      "total": 3,
       "rate": 0
     },
     "10": {
       "hits": 0,
-      "total": 2,
+      "total": 3,
       "rate": 0
     }
   },
   "verifiedHistory": [
+    {
+      "targetIssue": "26/122",
+      "sourceThroughIssue": "26/121",
+      "generatedAt": "2026-11-15T14:13:09.005Z",
+      "model": "special-v2",
+      "top10": [
+        {
+          "rank": 1,
+          "number": 29,
+          "score": 39.1
+        },
+        {
+          "rank": 2,
+          "number": 11,
+          "score": 38.055
+        },
+        {
+          "rank": 3,
+          "number": 31,
+          "score": 37.179
+        },
+        {
+          "rank": 4,
+          "number": 47,
+          "score": 36.867
+        },
+        {
+          "rank": 5,
+          "number": 8,
+          "score": 35.582
+        },
+        {
+          "rank": 6,
+          "number": 28,
+          "score": 34.968
+        },
+        {
+          "rank": 7,
+          "number": 17,
+          "score": 34.42
+        },
+        {
+          "rank": 8,
+          "number": 19,
+          "score": 33.641
+        },
+        {
+          "rank": 9,
+          "number": 24,
+          "score": 33.536
+        },
+        {
+          "rank": 10,
+          "number": 35,
+          "score": 33.49
+        }
+      ],
+      "actualSpecial": 36,
+      "hitRank": null
+    },
     {
       "targetIssue": "26/121",
       "sourceThroughIssue": "26/120",
@@ -265,6 +325,6 @@
       "hitRank": null
     }
   ],
-  "archivedCount": 3,
+  "archivedCount": 4,
   "note": "仅纳入已留档的逐期预测；无预测档案的历史期数不补造记录。"
 }
