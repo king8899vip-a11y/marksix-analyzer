@@ -68,7 +68,30 @@ async function main() {
   const snapshotUrl = new URL('data/snapshot.json', root);
   const oldHistory = JSON.parse(await readFile(historyUrl,'utf8'));
   const snapshot = JSON.parse(await readFile(snapshotUrl,'utf8'));
-  const fetched = await fetchOfficial();
+  // A completed HTTP request with last draw's old data is NOT a successful post-draw refresh.
+  // From 21:45 HK time, require the scheduled issue to appear in the official result set.
+  // Never fabricate a draw or unlock/recompute a prediction based on unconfirmed results.
+  const hkParts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{
+    timeZone:'Asia/Hong_Kong',year:'numeric',month:'2-digit',day:'2-digit',
+    hour:'2-digit',minute:'2-digit',hourCycle:'h23'
+  }).formatToParts(new Date()).map(p=>[p.type,p.value]));
+  const hkDate=hkParts.year+'-'+hkParts.month+'-'+hkParts.day;
+  const hkTime=hkParts.hour+':'+hkParts.minute;
+  const pending=oldHistory.nextDraw;
+  const due=pending?.issue&&pending?.date
+    &&(hkDate>pending.date||(hkDate===pending.date&&hkTime>='21:45'));
+  let fetched;
+  for(let retry=0;retry<5;retry++){
+    fetched=await fetchOfficial();
+    const latestOfficial=[...fetched].sort((a,b)=>b.issue.localeCompare(a.issue))[0];
+    if(!due||latestOfficial.issue>=pending.issue)break;
+    console.warn('OFFICIAL_RESULT_PENDING',JSON.stringify({
+      expectedIssue:pending.issue,latestOfficialIssue:latestOfficial.issue,
+      retry:retry+1,of:5,hkDate,hkTime
+    }));
+    if(retry<4)await new Promise(resolve=>setTimeout(resolve,15000));
+    else fail('OFFICIAL_RESULT_STALE: official source has not published scheduled '+pending.issue+'; refusing to mark old result as updated');
+  }
 
 
   fetched.sort((a,b)=>b.date.localeCompare(a.date)||b.issue.localeCompare(a.issue));
