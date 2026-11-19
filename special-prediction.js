@@ -38,14 +38,63 @@
    // Use a conservative grace period after the advertised 21:30 draw.
    return today>next.date||(today===next.date&&hhmm>='21:45');
  }
- function render(data,overdue=false){
+ function nextIssue(issue){
+   const m=/^(\d{2})\/(\d{3})$/.exec(issue||'');
+   return m?m[1]+'/'+String(Number(m[2])+1).padStart(3,'0'):null;
+ }
+ const validForecast=record=>record&&/^\d{2}\/\d{3}$/.test(record.targetIssue||'')
+   &&Array.isArray(record.top10)&&record.top10.length===10
+   &&new Set(record.top10.map(x=>x.number)).size===10
+   &&record.top10.every(x=>Number.isInteger(x.number)&&x.number>=1&&x.number<=49);
+ async function fromHomepage(data,draw){
+   if(!draw||!/^\d{2}\/\d{3}$/.test(draw.issue||'')
+      ||!Number.isInteger(draw.special)||draw.special<1||draw.special>49
+      ||draw.issue<=data.latestResultIssue)return {data,live:false};
+   const output={...data};
+   const history=[...(data.verifiedHistory||[])];
+   const all=[data.current,data.previous,...history].filter(validForecast);
+   const locked=all.find(x=>x.targetIssue===draw.issue&&x.sourceThroughIssue<draw.issue);
+   if(locked){
+     const hit=locked.top10.findIndex(x=>x.number===draw.special);
+     const verified={...locked,actualSpecial:draw.special,hitRank:hit>=0?hit+1:null};
+     output.previous=verified;
+     if(!history.some(x=>x.targetIssue===draw.issue))history.unshift(verified);
+     const recent=history.filter(x=>x.actualSpecial!=null).sort((a,b)=>b.targetIssue.localeCompare(a.targetIssue)).slice(0,20);
+     output.verifiedHistory=recent;
+     output.recent20=Object.fromEntries([1,3,6,10].map(k=>{
+       const hits=recent.filter(x=>x.hitRank!==null&&x.hitRank<=k).length;
+       return [k,{hits,total:recent.length,rate:recent.length?Math.round(hits/recent.length*10000)/100:null}];
+     }));
+   }else{
+     output.previous=null;
+   }
+   output.latestResultIssue=draw.issue;
+   const target=nextIssue(draw.issue);
+   const possible=all.find(x=>x.targetIssue===target&&x.sourceThroughIssue===draw.issue);
+   output.current=possible||null;
+   if(!output.current&&target){
+     // Only load a real, immutable per-issue archive. Never recompute after results.
+     try{
+       const url='./data/predictions/special-'+target.replace('/','-')+'.json?ts='+Date.now();
+       const response=await fetch(url,{cache:'no-store'});
+       if(response.ok){
+         const archived=await response.json();
+         if(validForecast(archived)&&archived.targetIssue===target&&archived.sourceThroughIssue===draw.issue)
+           output.current=archived;
+       }
+     }catch{}
+   }
+   return {data:output,live:true,unverified:!locked};
+ }
+ function render(data,overdue=false,live=false,unverified=false){
    const current=data.current, previous=data.previous, stats=data.recent20||{};
    let html='<div class="section-head"><h2>特别号观察池 · '+(overdue?'等待官方核实':'下一期预测')+'</h2></div>';
+   if(live)html+='<p class="forecast-meta" role="status">已同步首页第 '+safe(data.latestResultIssue)+' 期最新开奖结果。'+(unverified?'该期缺少开奖前预测档案，无法验证命中。':'预测验证已按开奖前留档号码即时更新。')+'</p>';
    if(current){
     if(overdue)html+='<div class="forecast-card" role="status"><b>本期已到开奖时段，官方结果仍未同步。</b><p>第 '+safe(current.targetIssue)+' 期为开奖前锁定的历史预测，不是下一期的新预测。待官方结果确认后，会显示验证并生成下期预测。</p></div>';
     html+=`<div class="forecast-card"><h3>第 ${safe(current.targetIssue)} 期 · ${overdue?'待核实的开奖前预测':'开奖前锁定预测'}</h3><p class="forecast-meta">依据截至 ${safe(current.sourceThroughIssue)} 期历史记录 · 预测锁定时间：${safe(current.generatedAt?.replace('T',' ').slice(0,19))} UTC · 重点观察前6码，完整保留Top10</p><div class="forecast-pool">${numbers(current.top10,null)}</div><p class="forecast-meta">此处为历史数据模型排序，不代表公平开奖的客观命中概率提高。</p></div>`;
    }else{
-    html+='<div class="forecast-card forecast-error">下一期预测档案尚未生成或资料不同步。不会以旧版静态号码冒充本期预测。</div>';
+    html+='<div class="forecast-card forecast-error">最新开奖结果已同步，但下一期锁定预测档案尚未生成。开奖后不会补造或冒充事前预测。</div>';
    }
    html+='<div class="section-head"><h2>上一期预测验证</h2></div>';
    if(previous){
@@ -70,11 +119,18 @@
     const h=await fetch('./data/history.json?ts='+Date.now(),{cache:'no-store'});
     if(h.ok)overdue=drawOverdue(await h.json(),data);
    }catch{}
-   render(data,overdue);
+   const merged=await fromHomepage(data,window.MarkSixLatestDraw);
+   render(merged.data,merged.live?false:overdue,merged.live,merged.unverified);
   }catch(e){root.innerHTML='<div class="forecast-card forecast-error">特别号预测档案暂时无法加载：'+safe(e.message)+'。不展示旧版号码，请稍后刷新。</div>';
    const p=document.getElementById('specialPool');if(p)p.style.display='none';
   }
  }
+ let updateQueued=false;
+ document.addEventListener('marksix:latest-draw',()=>{
+   if(updateQueued)return;
+   updateQueued=true;
+   queueMicrotask(()=>{updateQueued=false;reload()});
+ });
  reload();
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)reload()});
  setInterval(()=>{if(!document.hidden)reload()},60*1000);
