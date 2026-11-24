@@ -94,7 +94,8 @@
     if(overdue)html+='<div class="forecast-card" role="status"><b>本期已到开奖时段，官方结果仍未同步。</b><p>第 '+safe(current.targetIssue)+' 期为开奖前锁定的历史预测，不是下一期的新预测。待官方结果确认后，会显示验证并生成下期预测。</p></div>';
     html+=`<div class="forecast-card"><h3>第 ${safe(current.targetIssue)} 期 · ${overdue?'待核实的开奖前预测':'开奖前锁定预测'}</h3><p class="forecast-meta">依据截至 ${safe(current.sourceThroughIssue)} 期历史记录 · 预测锁定时间：${safe(current.generatedAt?.replace('T',' ').slice(0,19))} UTC · 重点观察前6码，完整保留Top10</p><div class="forecast-pool">${numbers(current.top10,null)}</div><p class="forecast-meta">此处为历史数据模型排序，不代表公平开奖的客观命中概率提高。</p></div>`;
    }else{
-    html+='<div class="forecast-card forecast-error">最新开奖结果已同步，但下一期锁定预测档案尚未生成。开奖后不会补造或冒充事前预测。</div>';
+    const expected=nextIssue(data.latestResultIssue);
+    html+='<div class="forecast-card" role="status"><h3>第 '+safe(expected||'下一')+' 期预测待生成</h3><p>首页开奖结果已更新，但下一期的开奖前预测档案还没有同步完成。不会用上一期号码冒充新预测。</p><p class="forecast-meta">下方保留上一期已锁定的预测与开奖结果验证，数据生成后将自动刷新显示。</p></div>';
    }
    html+='<div class="section-head"><h2>上一期预测验证</h2></div>';
    if(previous){
@@ -108,6 +109,24 @@
    const oldPool=document.querySelector('#specialPool'),oldRank=document.querySelector('#specialRanking');
    for(const el of [oldPool,oldRank]){if(el){el.style.display='none';if(el.previousElementSibling?.classList.contains('section-head'))el.previousElementSibling.style.display='none';}}
  }
+ 
+ // If summary.json is behind the archived predictions, locate the already-locked
+ // next issue's immutable archive without recomputing a prediction client-side.
+ async function loadArchivedNext(data){
+   const lastIssue=data?.latestResultIssue;
+   const expected=nextIssue(lastIssue);
+   if(!expected||data.current?.targetIssue===expected)return data;
+   try{
+     const url='./data/predictions/special-'+expected.replace('/','-')+'.json?t='+Date.now();
+     const response=await fetch(url,{cache:'no-store'});
+     if(!response.ok)return data;
+     const archive=await response.json();
+     if(validForecast(archive)&&archive.targetIssue===expected&&archive.sourceThroughIssue===lastIssue){
+       return {...data,current:{...archive,actualSpecial:null,hitRank:null}};
+     }
+   }catch{}
+   return data;
+ }
  async function reload(){
   try{
    const r=await fetch('./data/predictions/summary.json?ts='+Date.now(),{cache:'no-store'});
@@ -120,7 +139,8 @@
     if(h.ok)overdue=drawOverdue(await h.json(),data);
    }catch{}
    const merged=await fromHomepage(data,window.MarkSixLatestDraw);
-   render(merged.data,merged.live?false:overdue,merged.live,merged.unverified);
+   const reconciled=await loadArchivedNext(merged.data);
+   render(reconciled,merged.live?false:overdue,merged.live,merged.unverified);
   }catch(e){root.innerHTML='<div class="forecast-card forecast-error">特别号预测档案暂时无法加载：'+safe(e.message)+'。不展示旧版号码，请稍后刷新。</div>';
    const p=document.getElementById('specialPool');if(p)p.style.display='none';
   }
